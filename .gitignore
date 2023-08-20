@@ -1,5 +1,11 @@
-.pio
-.vscode/.browse.c_cpp.db*
-.vscode/c_cpp_properties.json
-.vscode/launch.json
-.vscode/ipch
+esp32_cam/.pio
+esp32_cam/.vscode/.browse.c_cpp.db*
+esp32_cam/.vscode/c_cpp_properties.json
+esp32_cam/.vscode/launch.json
+esp32_cam/.vscode/ipch
+
+esp32_main/.pio
+esp32_main/.vscode/.browse.c_cpp.db*
+esp32_main/.vscode/c_cpp_properties.json
+esp32_main/.vscode/launch.json
+esp32_main/.vscode/ipch
