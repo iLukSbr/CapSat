@@ -6,7 +6,7 @@
 // https://github.com/miguel5612/MQSensorsLib
 #include <MQUnifiedsensor.h>
 
-#define OZONOSCOPE_PIN A0// Ozonoscope analog pin
+#define OZONOSCOPE_PIN 6// Ozonoscope analog pin
 #define OZONOSCOPE_A_PARAMETER 23.943// Configure the equation to to calculate O3 concentration
 #define OZONOSCOPE_B_PARAMETER -1.11// Configure the equation to to calculate O3 concentration
 #define OZONOSCOPE_REGRESSION_METHOD 1// Set regression method a*ratio^b
@@ -17,6 +17,7 @@
 #define OZONOSCOPE_ADC_BIT_RESOLUTION 10// MQ-131 ADC bit resolution
 #define OZONOSCOPE_DECIMAL_PLACES 4// Concentration decimal places
 #define OZONOSCOPE_NAME "MQ-131"// MQ-131 sensor name
+#define O3_KEY "O3"// JSON ozone concentration key
 
 #ifdef ESP32
   #define OZONOSCOPE_BOARD "ESP32"// For ESP32
@@ -29,15 +30,15 @@
 class Ozonoscope : public Component{
   private:
     MQUnifiedsensor* MQ131 = nullptr;
+    float ozonoscope_data = 0.f;
   public:
-    float ozonoscope_data;
-    void begin() override{
+    Ozonoscope(){
       MQ131 = new MQUnifiedsensor(OZONOSCOPE_BOARD, OZONOSCOPE_VOLTAGE_RESOLUTION, OZONOSCOPE_ADC_BIT_RESOLUTION, OZONOSCOPE_PIN, OZONOSCOPE_NAME);
       MQ131->setRegressionMethod(OZONOSCOPE_REGRESSION_METHOD);// Set regression method a*ratio^b
       MQ131->setA(OZONOSCOPE_A_PARAMETER);// Configure the a to to calculate O3 concentration
       MQ131->setB(OZONOSCOPE_B_PARAMETER);// Configure the b to to calculate O3 concentration
       MQ131->init();// Start
-      float calcR0 = 0;
+      float calcR0 = 0.f;
       for(int i = 1; i<=OZONOSCOPE_CALIBRATION_LOOP; i++)
       {
         MQ131->update();// Update data reading the voltage from the analog pin
@@ -55,17 +56,23 @@ class Ozonoscope : public Component{
       MQ131->serialDebug(true);
       MQ131->setOffset(OZONOSCOPE_OFFSET);
     }
+    ~Ozonoscope(){
+      delete MQ131;
+    }
     void gatherData() override{
       MQ131->update();// Get data
       MQ131->readSensorR0Rs();// Calibrate
-      ozonoscope_data = MQ131->getConcentration();// Ozone concentration in ppb
+      ozonoscope_data = MQ131->getConcentration();// Ozone concentration in air (ppb)
     }
     void printData() override{// Display data for test
       Serial.print(F("Ozonoscope: "));
       Serial.print(ozonoscope_data, OZONOSCOPE_DECIMAL_PLACES);
       Serial.println();
     }
-    void saveData(SdFile* my_file) override{// Save data to MicroSD card
+    void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override{// Create JSON entries
+      payload[F(O3_KEY)] = ozonoscope_data;
+    }
+    void saveCSVToFile(SdFile* my_file) override{// Save data to MicroSD card
       my_file->print(ozonoscope_data, OZONOSCOPE_DECIMAL_PLACES);
       my_file->print(F(","));
     }

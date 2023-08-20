@@ -2,14 +2,16 @@
 
 #include "Component.h"
 
-#define UV_RADIOMETER_PIN A4// UV radiometer analog pin
+#define UV_RADIOMETER_PIN 7// UV radiometer analog pin
+#define UV_KEY "UV"// JSON UV level key
 
 // Taidacent UV radiometer
 class UVRadiometer : public Component{
   private:
-    uint8_t uv_radiometer_data;
+    uint8_t uv_radiometer_data = 0;
   public:
-    void begin() override{}
+    UVRadiometer(){}
+    ~UVRadiometer(){}
     void gatherData() override{
       double converted_voltage = 1000.0*analogRead(UV_RADIOMETER_PIN)*5.0/1023.0;
       if(converted_voltage <= 227)
@@ -42,7 +44,10 @@ class UVRadiometer : public Component{
       Serial.println(uv_radiometer_data);
       Serial.println();
     }
-    void saveData(SdFile* my_file) override{// Save data to MicroSD card
+    void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override{// Create JSON entries
+      payload[F(UV_KEY)] = uv_radiometer_data;
+    }
+    void saveCSVToFile(SdFile* my_file) override{// Save data to MicroSD card
       my_file->print(uv_radiometer_data);
       my_file->print(F(","));
     }

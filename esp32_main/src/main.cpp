@@ -16,23 +16,32 @@
 */
 
 /*
-    Copyright (C) <2023>  <Lucas Yukio Fukuda Matsumoto>
-    
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+MIT License
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+Copyright (c) 2023 Lucas Yukio Fukuda Matsumoto
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 */
 
 #include "pch.h"
+
+#include <Arduino.h>// Arduino compatibility
 
 // Vector creator
 // https://github.com/janelia-arduino/Vector
@@ -103,6 +112,8 @@
 #define WIFI_SSID "OBSAT"// WiFi SSID
 #define WIFI_PASSWORD "OBSAT2023"// WiFi password
 #define HTTP_WEBSITE "https://obsat.org.br/teste_post/envio.php"// HTTP POST website
+#define PAYLOAD_KEY "payload"// JSON payloade key
+#define TEAM_KEY "equipe"// JSON team key
 
 /* === Components instantiation === */
 Accelerometer* mpu9250;
@@ -121,20 +132,26 @@ Humidimeter* ens160aht21;
 Multimeter* ina219;
 
 void newAll(){
+  m8n = new Gps();
+  mhrtc2 = new RTClock(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond());
+  microsd = new MicroSDReaderWriter(mhrtc2->getDateTime());
+
+  // SPI
+  pmsa003 = new ParticulateMeter();
+
+  // I²C
   mpu9250 = new Accelerometer();
   ms5611 = new Altimeter();
-  mhrd = new Rainmeter();
-  mics6814 = new GasMeter();
-  m8n = new Gps();
-  microsd = new MicroSDReaderWriter();
   qmc5883l = new Magnetometer();
-  mq131 = new Ozonoscope();
-  pmsa003 = new ParticulateMeter();
-  taidacent = new UVRadiometer();
-  mhrtc2 = new RTClock();
-  ntc = new Thermometer();
   ens160aht21 = new Humidimeter();
   ina219 = new Multimeter();
+
+  // Analog
+  mhrd = new Rainmeter();
+  mics6814 = new GasMeter();
+  mq131 = new Ozonoscope();
+  taidacent = new UVRadiometer();
+  ntc = new Thermometer();
 }
 
 /* === Component list === */
@@ -165,11 +182,11 @@ void beginI2C(){
 
 #if defined(ESP32) || defined(ESP8266)// For ESP
   void beginWiFi(){
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    WiFi.begin(F(WIFI_SSID), F(WIFI_PASSWORD));
     WiFi.setSleep(false);
     while (WiFi.status() != WL_CONNECTED){
       delay(1000);
-      Serial.println("Waiting for WiFi connection...");
+      Serial.println(F("Waiting for WiFi connection..."));
     }
   }
 #endif
@@ -177,11 +194,6 @@ void beginI2C(){
 void beginAll(){
   beginI2C();
   newAll();
-  pushAll();
-  for(auto element : component_list)
-    element->begin();
-  microsd->begin(mhrtc2->clock_data);
-
   #if defined(ESP32) || defined(ESP8266)// For ESP
     beginWiFi();
   #endif
@@ -193,16 +205,6 @@ void gatherDataAll(){
     element->gatherData();
 }
 
-/* === Save gathered data === */
-void saveAll(){
-  SdFile* my_file = microsd->gatherData();// Abre o my_file para salvar no cartão MicroSD
-  if(my_file)
-    for(auto element : component_list)
-      element->saveData(my_file);
-  my_file->println();
-  my_file->close();
-}
-
 /* === Display gathered data === */
 void printAll(){
   for(auto element : component_list)
@@ -210,36 +212,43 @@ void printAll(){
   Serial.println();
 }
 
-/* === Format data as JSON === */
-#if defined(ESP32) || defined(ESP8266)// For ESP
-  String makeJSON(){
-    StaticJsonDocument<1000> doc;
-    doc["equipe"] = TEAM_ID;
-    doc["bateria"] = 98.5;
-    doc["temperatura"] = 15.4;
-    doc["pressao"] = 101300;
-    doc["giroscopio"][0] = 42;
-    doc["giroscopio"][1] = 90;
-    doc["giroscopio"][2] = 30;
-    doc["acelerometro"][0] = 10;
-    doc["acelerometro"][1] = 3;
-    doc["acelerometro"][2] = 4;
-    JsonObject payload = doc.createNestedObject("payload");
-    payload["gas"] = 3.1415;
-    payload["mag"][0] = 12;
-    payload["mag"][1] = 123;
-    payload["mag"][2] = 543;
-    payload["chuva"] = 0;
-    String doc_serialized;
-    serializeJson(doc, doc_serialized);
-    return doc_serialized;
+/* === Save gathered data === */
+String makeJSONAll(const bool& isHTTP){
+  StaticJsonDocument<1000> doc;
+  JsonObject payload = doc.createNestedObject(F(PAYLOAD_KEY));
+  doc[F(TEAM_KEY)] = TEAM_ID;
+  for(auto element : component_list)
+    element->makeJSON(isHTTP, doc, payload);
+  String doc_serialized;
+  serializeJson(doc, doc_serialized);
+  return doc_serialized;
+}
+
+void saveCSVToFileAll(){
+  SdFile* my_file = microsd->gatherData();// Open file to save into MicroSD card
+  if(my_file){
+    for(auto element : component_list)
+      element->saveCSVToFile(my_file);// Save .csv
+    my_file->println();// Descend one line
+    my_file->close();// Close file
   }
+}
+
+void saveJSONToFileAll(const String& doc_serialized){
+  SdFile* my_file = microsd->gatherData();// Open file to save into MicroSD card
+  if(my_file){
+    my_file->println(doc_serialized);// Write JSON
+    my_file->println();// Descend one line
+    my_file->close();// Close file
+  }
+}
 
 /* === Send JSON data to server by HTTP POST === */
-  void sendDataToServer(String doc_serialized){
+#if defined(ESP32) || defined(ESP8266)// For ESP
+  void sendJSONToServerAll(String doc_serialized){
     HTTPClient http;
-    http.begin(HTTP_WEBSITE);
-    http.addHeader("Content-Type", "application/json");
+    http.begin(F(HTTP_WEBSITE));
+    http.addHeader(F("Content-Type"), F("application/json"));
     uint8_t httpResponseCode = http.POST(doc_serialized);
     if(httpResponseCode > 0){
       Serial.print(F("HTTP POST sending success: "));
@@ -265,15 +274,18 @@ void setup(){
 /* === Data gathering loop === */
 void loop(){
   gatherDataAll();
-  saveAll();
+  #ifdef JSON_FORMAT
+    saveJSONToFileAll(makeJSONAll(false));
+  #else
+    saveCSVToFileAll();
+  #endif
   printAll();
-  delay(1000);
-
   #if defined(ESP32) || defined(ESP8266)// For ESP
     unsigned long elapsed_time = millis();
     if(elapsed_time - stopwatch >= HTTP_SENDING_DELAY || stopwatch <= HTTP_SENDING_DELAY){
-      sendDataToServer(makeJSON());
+      sendJSONToServerAll(makeJSONAll(true));
       stopwatch = millis();
     }
   #endif
+  delay(1000);
 }

@@ -17,9 +17,11 @@
 class Accelerometer : public Component{
   private:
     bfs::Mpu6500* imu = nullptr;
+    const String ACCELEROMETER_KEY = F("acelerometro");// JSON accelerometer key
+    const String GYROSCOPE_KEY = F("giroscopio");// JSON gyroscope key
+    float accelerometer_data[ACCELEROMETER_SIZE] = {0.f};
   public:
-    float accelerometer_data[ACCELEROMETER_SIZE] = {0};
-    void begin() override{
+    Accelerometer(){
       imu = new bfs::Mpu6500();
       imu->Config(&Wire, bfs::Mpu6500::I2C_ADDR_PRIM);// I²C address 0x68
       while(!imu->Begin()){// Waiting for sensor communication
@@ -30,6 +32,9 @@ class Accelerometer : public Component{
         delay(ACCELEROMETER_CALIBRATION_DELAY);// Calibrate moving throug an 8 pattern on a flat surface
         Serial.println(F("Waiting for gyroscope..."));
       }
+    }
+    ~Accelerometer(){
+      delete imu;
     }
     void gatherData() override{
       if(imu->Read()){// If something was received
@@ -51,7 +56,14 @@ class Accelerometer : public Component{
         Serial.print(F(" "));
       }
     }
-    void saveData(SdFile* my_file) override{// Save data to MicroSD card
+    void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override{// Create JSON entries
+      uint8_t i, j;
+      for(i=0, j=0; i<3 && j<3; i++, j++)
+        doc[ACCELEROMETER_KEY][j] = accelerometer_data[i];
+      for(i=3, j=0; i<6 && j<3; i++, j++)
+        doc[GYROSCOPE_KEY][j] = accelerometer_data[i];
+    }
+    void saveCSVToFile(SdFile* my_file) override{// Save data to MicroSD card
       for(uint8_t i=0; i<ACCELEROMETER_SIZE; i++){
         my_file->print(accelerometer_data[i]);
         my_file->print(F(","));

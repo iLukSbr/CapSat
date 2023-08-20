@@ -11,10 +11,17 @@
 #include <DFRobot_ENS160.h>// Address 0x53
 #include <AHTxx.h>// Address 0x38
 
+#define HUMIDIMETER_SIZE 4// Sensor data quantity
+#define HUMIDITY_KEY "umidade"// JSON humidity key
+#define TVOC_KEY "TCOV"// JSON Total Volatile Organic Compounds (TVOC) key
+#define CO2_KEY "CO2"// JSON CO2 key
+#define AQI_KEY "IQA"// JSON Air Quality Index (AQI) key
+
 class Humidimeter : public Component{
   private:
     AHTxx* aht21 = nullptr;
     DFRobot_ENS160_I2C* ENS160 = nullptr;
+    float humidimeter_data[HUMIDIMETER_SIZE] = {0.f};
     float ahtTemperature;
     float ahtHumidity;
     void printStatus(){
@@ -40,8 +47,7 @@ class Humidimeter : public Component{
       }
     }
   public:
-    float humidimeter_data[4] = {0};
-    void begin() override{
+    Humidimeter(){
       aht21 = new AHTxx(AHTXX_ADDRESS_X38, AHT2x_SENSOR);
       ENS160 = new DFRobot_ENS160_I2C(&Wire, 0x53);
       while(aht21->begin() != true){
@@ -107,6 +113,10 @@ class Humidimeter : public Component{
       Serial.print(F("Sensor operating status : "));
       Serial.println(Status);
     }
+    ~Humidimeter(){
+      delete aht21;
+      delete ENS160;
+    }
     void gatherData() override{
       uint8_t AQI = ENS160->getAQI();
       Serial.print(F("Air quality index : "));
@@ -124,7 +134,14 @@ class Humidimeter : public Component{
     void printData() override{// Display data for test
 
     }
-    void saveData(SdFile* my_file) override{// Save data to MicroSD card
+    void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override{// Create JSON entries
+      payload[F(HUMIDITY_KEY)] = humidimeter_data[0];
+      payload[F(TVOC_KEY)] = humidimeter_data[1];
+      payload[F(CO2_KEY)] = humidimeter_data[2];
+      if(!isHTTP)
+        payload[F(AQI_KEY)] = humidimeter_data[3];
+    }
+    void saveCSVToFile(SdFile* my_file) override{// Save data to MicroSD card
       for(uint8_t i=0; i<3; i++){
         my_file->print(humidimeter_data[i],4);
         my_file->print(F(","));

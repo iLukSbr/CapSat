@@ -1,12 +1,15 @@
 #pragma once
 
-#include "MicroSDReaderWriter.h"
+#include <MicroSDReaderWriter.h>
+#include <ArduinoJson.h>
 
 // General
 class Component{
   public:
-    virtual void begin() = 0;
+    Component(){}
+    virtual ~Component(){}
     virtual void gatherData() = 0;
     virtual void printData() = 0;
-    virtual void saveData(SdFile* my_file) = 0;
+    virtual void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) = 0;
+    virtual void saveCSVToFile(SdFile* my_file) = 0;
 };

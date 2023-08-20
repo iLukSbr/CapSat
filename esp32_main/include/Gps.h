@@ -6,11 +6,17 @@
 // https://github.com/mikalhart/TinyGPSPlus
 #include <TinyGPS++.h>
 
-#define GPS_SIZE 5// Sensor data quantity
+#define GPS_SIZE 6// Sensor data quantity
 #define GPS_SERIAL_BAUD_RATE 230400// Serial baud rate
 #define GPS_DECIMAL_PLACES 6// Decimal places for GPS coordinates
 #define GPS_MIN_CHARS_PROCESSED 6// Minimum GPS data received to be considered lost information
 #define GPS_CALIBRATION_DELAY 1000// Delay between calibration requests (ms)
+#define LATITUDE_KEY "latitude"// JSON latitude key
+#define LONGITUDE_KEY "longitude"// JSON longitude key
+#define SURFACE_ALTITUDE_KEY "altitude do terreno"// JSON terrain altitude key
+#define SPEED_KEY "velocidade"// JSON speed key
+#define COURSE_KEY "curso"// JSON course key
+#define SATELLITES_KEY "satelites"// JSON number of GPS satellites key
 
 #if !defined(ESP32) && !defined(ESP8266)// For Arduino
   #define GPS_TX_PIN 8// GPS UART RX pin
@@ -34,21 +40,24 @@ class Gps : public Component{
       SoftwareSerial* gpsSerial = nullptr;
     #endif
     TinyGPSPlus* gps = nullptr;
-    void getInfo(){
+    double gps_data[GPS_SIZE] = {0.f};
+    void getInfo(){// Read values
       if (gps->location.isValid()){
         gps_data[0] = gps->location.lat();// Latitude (°)
         gps_data[1] = gps->location.lng();// Longitude (°)
       }
       if(gps->altitude.isValid())
-        gps_data[2] = gps->altitude.meters();// Surface altitude (m)
+        gps_data[2] = gps->altitude.meters();// Terrain altitude (m)
       if(gps->speed.isValid())
         gps_data[3] = gps->speed.kmph();// Speed (km/h)
       if(gps->course.isValid())
-        gps_data[4] = gps->course.deg();// Direction (°)
+        gps_data[4] = gps->course.deg();// Course (°)
+      if(gps->satellites.isValid())
+        gps_data[5] = gps->satellites.value();// Number of GPS satellite signals acquired
     }
   public:
-    double gps_data[GPS_SIZE] = {0};
-    void begin() override{
+    Gps(){
+      gps = new TinyGPSPlus();
       #if defined(ESP32) || defined(ESP8266)// For ESP
         gpsSerial = new HardwareSerial(UART_NUM_0);
       #else// For Arduino
@@ -60,6 +69,10 @@ class Gps : public Component{
         delay(GPS_CALIBRATION_DELAY);
         Serial.println(F("Searching for GPS signal..."));
       }while(!gps->date.isValid() && !gps->time.isValid());// Colecting date and time
+    }
+    ~Gps(){
+      delete gps;
+      delete gpsSerial;
     }
     void gatherData() override{
       uint16_t i = 0;
@@ -86,7 +99,17 @@ class Gps : public Component{
       }
       Serial.println();
     }
-    void saveData(SdFile* my_file) override{// Save data to MicroSD card
+    void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override{// Create JSON entries
+      if(!isHTTP){
+        payload[F(LATITUDE_KEY)] = gps_data[0];
+        payload[F(LONGITUDE_KEY)] = gps_data[1];
+        payload[F(SURFACE_ALTITUDE_KEY)] = gps_data[2];
+        payload[F(SPEED_KEY)] = gps_data[3];
+        payload[F(COURSE_KEY)] = gps_data[4];
+        payload[F(SATELLITES_KEY)] = gps_data[5];
+      }
+    }
+    void saveCSVToFile(SdFile* my_file) override{// Save data to MicroSD card
       uint8_t i;
       for(i=0; i<3; i++){
         my_file->print(gps_data[i], GPS_DECIMAL_PLACES);
@@ -96,5 +119,23 @@ class Gps : public Component{
         my_file->print(gps_data[i]);
         my_file->print(F(","));
       }
+    }
+    const uint16_t getYear(){
+      return gps->date.year();
+    }
+    const uint8_t getMonth(){
+      return gps->date.month();
+    }
+    const uint8_t getDay(){
+      return gps->date.day();
+    }
+    const uint8_t getHour(){
+      return gps->time.hour();
+    }
+    const uint8_t getMinute(){
+      return gps->time.minute();
+    }
+    const uint8_t getSecond(){
+      return gps->time.second();
     }
 };
