@@ -47,10 +47,10 @@ class Gps : public Component{
     void printData() override;// Display data for test
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
     void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
-    uint16_t getYear() const;// Year
-    uint8_t getMonth() const;// Month
-    uint8_t getDay() const;// Day
-    uint8_t getHour() const;// Hour
-    uint8_t getMinute() const;// Minute
-    uint8_t getSecond() const;// Second
+    const uint16_t getYear() const;// Year
+    const uint8_t getMonth() const;// Month
+    const uint8_t getDay() const;// Day
+    const uint8_t getHour() const;// Hour
+    const uint8_t getMinute() const;// Minute
+    const uint8_t getSecond() const;// Second
 };

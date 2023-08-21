@@ -83,26 +83,26 @@ void Gps::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
     }
 }
 
-uint16_t Gps::getYear() const{
+const uint16_t Gps::getYear() const{
     return gps->date.year();
 }
 
-uint8_t Gps::getMonth() const{
+const uint8_t Gps::getMonth() const{
     return gps->date.month();
 }
 
-uint8_t Gps::getDay() const{
+const uint8_t Gps::getDay() const{
     return gps->date.day();
 }
 
-uint8_t Gps::getHour() const{
+const uint8_t Gps::getHour() const{
     return gps->time.hour();
 }
 
-uint8_t Gps::getMinute() const{
+const uint8_t Gps::getMinute() const{
     return gps->time.minute();
 }
 
-uint8_t Gps::getSecond() const{
+const uint8_t Gps::getSecond() const{
     return gps->time.second();
 }
