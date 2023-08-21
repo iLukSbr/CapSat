@@ -107,6 +107,7 @@ SOFTWARE.
 #define HTTP_SENDING_DELAY 4000// HTTP sending delay (ms)
 #define COMPONENTS_VECTOR_SIZE 13// Components quantity inside vector
 #define SERIAL_BAUD_RATE 230400// Serial baud rate
+#define RELAY_PIN 10// Relay pin
 
 /* === Strings === */
 #define WIFI_SSID "OBSAT"// WiFi SSID
@@ -264,11 +265,28 @@ void saveJSONToFileAll(const String& doc_serialized){
   unsigned long stopwatch = 0;// Stopwatch for timed data sending
 #endif
 
+void powerOnComponents(){
+  digitalWrite(RELAY_PIN, HIGH);
+}
+
+void powerOffComponents(){
+  digitalWrite(RELAY_PIN, LOW);
+}
+
+void deleteAll(){
+  for(auto element : component_list)
+    delete element;
+  component_list.clear();
+}
+
 /* === Start configuration === */
 void setup(){
+  pinMode(RELAY_PIN, OUTPUT);
+  powerOnComponents();
   Serial.begin(SERIAL_BAUD_RATE);
+  delay(CALIBRATION_DELAY);
   beginAll();
-  delay(1000);
+  delay(CALIBRATION_DELAY);
 }
 
 /* === Data gathering loop === */
@@ -287,5 +305,5 @@ void loop(){
       stopwatch = millis();
     }
   #endif
-  delay(1000);
+  delay(CALIBRATION_DELAY);
 }
