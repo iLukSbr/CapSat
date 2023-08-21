@@ -2,12 +2,26 @@
 
 #include "Component.h"
 
-// NTC thermometer
+// KY-013 NTC temperature sensor
 // https://github.com/YuriiSalimov/NTC_Thermistor
 #include <Thermistor.h>
 #include <NTC_Thermistor.h>
 #include <SmoothThermistor.h>
 
+/*
+ESP: VIN = 3.3 V
+Analog output = 0 - 3.3 V
+
+Arduino: VIN = 5 V
+Analog output = 0 - 5 V
+*/
+
+#define NTC_SENSOR_PIN 5
+#define NTC_REFERENCE_RESISTANCE 9870
+#define NTC_NOMINAL_RESISTANCE 10000
+#define NTC_NOMINAL_TEMPERATURE 25
+#define NTC_B_VALUE 3950
+#define NTC_SMOOTHING_FACTOR 5
 #define TEMPERATURE_KEY "temperatura"// JSON temperature key
 
 class Thermometer : public Component{
@@ -15,28 +29,12 @@ class Thermometer : public Component{
     Thermistor* originThermistor = nullptr;
     Thermistor* thermistor = nullptr;
     float thermometer_data = 0.f;
+    
   public:
-    Thermometer(){
-      originThermistor = new NTC_Thermistor(56, 9870, 10000, 25, 3950);
-      thermistor = new SmoothThermistor(originThermistor, 5);
-    }
-    ~Thermometer(){
-      delete originThermistor;
-      delete thermistor;
-    }
-    void gatherData() override{// Leitura da tensão e conversão para graus Celsius
-      thermometer_data = thermistor->readCelsius();
-    }
-    void printData() override{// Display data for test
-      Serial.print(F("Termômetro: "));
-      Serial.print(thermometer_data);
-      Serial.println();
-    }
-    void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override{// Create JSON entries
-      doc[F(TEMPERATURE_KEY)] = thermometer_data;
-    }
-    void saveCSVToFile(SdFile* my_file) override{// Save data to MicroSD card
-      my_file->print(thermometer_data);
-      my_file->print(F(","));
-    }
+    Thermometer();// Create object
+    ~Thermometer();// Release memory
+    void gatherData() override;// Get data from component
+    void printData() override;// Display data for test
+    void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
+    void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
 };

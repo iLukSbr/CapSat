@@ -2,9 +2,14 @@
 
 #include "Component.h"
 
-// MQ-131 ozonoscope
+// Winsen MQ-131 low concentration ozone sensor
 // https://github.com/miguel5612/MQSensorsLib
 #include <MQUnifiedsensor.h>
+
+/*
+VIN = 5 V
+Analog output = 0 - 5 V (need level shifter)
+*/
 
 #define OZONOSCOPE_PIN 6// Ozonoscope analog pin
 #define OZONOSCOPE_A_PARAMETER 23.943// Configure the equation to to calculate O3 concentration
@@ -31,49 +36,12 @@ class Ozonoscope : public Component{
   private:
     MQUnifiedsensor* MQ131 = nullptr;
     float ozonoscope_data = 0.f;
+    
   public:
-    Ozonoscope(){
-      MQ131 = new MQUnifiedsensor(OZONOSCOPE_BOARD, OZONOSCOPE_VOLTAGE_RESOLUTION, OZONOSCOPE_ADC_BIT_RESOLUTION, OZONOSCOPE_PIN, OZONOSCOPE_NAME);
-      MQ131->setRegressionMethod(OZONOSCOPE_REGRESSION_METHOD);// Set regression method a*ratio^b
-      MQ131->setA(OZONOSCOPE_A_PARAMETER);// Configure the a to to calculate O3 concentration
-      MQ131->setB(OZONOSCOPE_B_PARAMETER);// Configure the b to to calculate O3 concentration
-      MQ131->init();// Start
-      float calcR0 = 0.f;
-      for(int i = 1; i<=OZONOSCOPE_CALIBRATION_LOOP; i++)
-      {
-        MQ131->update();// Update data reading the voltage from the analog pin
-        calcR0 += MQ131->calibrate(OZONOSCOPE_CLEAN_AIR_RATIO);// Calibrate
-      }
-      MQ131->setR0(calcR0/OZONOSCOPE_CALIBRATION_LOOP);// Set R0 and calibrate
-      while(isinf(calcR0)){
-        delay(1000);
-        Serial.println(F("Waiting for ozonoscope..."));
-      }
-      while(calcR0 == 0){
-        delay(1000);
-        Serial.println(F("Waiting for ozonoscope..."));
-      }
-      MQ131->serialDebug(true);
-      MQ131->setOffset(OZONOSCOPE_OFFSET);
-    }
-    ~Ozonoscope(){
-      delete MQ131;
-    }
-    void gatherData() override{
-      MQ131->update();// Get data
-      MQ131->readSensorR0Rs();// Calibrate
-      ozonoscope_data = MQ131->getConcentration();// Ozone concentration in air (ppb)
-    }
-    void printData() override{// Display data for test
-      Serial.print(F("Ozonoscope: "));
-      Serial.print(ozonoscope_data, OZONOSCOPE_DECIMAL_PLACES);
-      Serial.println();
-    }
-    void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override{// Create JSON entries
-      payload[F(O3_KEY)] = ozonoscope_data;
-    }
-    void saveCSVToFile(SdFile* my_file) override{// Save data to MicroSD card
-      my_file->print(ozonoscope_data, OZONOSCOPE_DECIMAL_PLACES);
-      my_file->print(F(","));
-    }
+    Ozonoscope();// Create object
+    ~Ozonoscope();// Release memory
+    void gatherData() override;// Get data from component
+    void printData() override;// Display data for test
+    void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
+    void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
 };

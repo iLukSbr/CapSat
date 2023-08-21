@@ -18,36 +18,12 @@ class Altimeter : public Component{
   private:
     MS5611* baro = nullptr;
     float altimeter_data[ALTIMETER_SIZE] = {0.f};
+    
   public:
-    Altimeter(){
-      baro = new MS5611();// Instantiate sensor
-      baro->begin();// Start sensor
-      baro->pressureOffset = MS5611_PRESSURE_OFFSET;// Calibrate according to local air pressure (Pa)
-    }
-    ~Altimeter(){
-      delete baro;
-    }
-    void gatherData() override{
-      altimeter_data[0] = baro->getPressure();// Air pressure (Pa)
-      altimeter_data[1] = baro->getAltitude();// Altitude (m)
-    }
-    void printData() override{// Display data for test
-      Serial.print(F("Altimeter/barometer: "));
-      for(uint8_t i=0; i<ALTIMETER_SIZE; i++){
-        Serial.print(altimeter_data[i]);
-        Serial.print(F(" "));
-      }
-      Serial.println();
-    }
-    void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override{// Create JSON entries
-        doc[F(PRESSURE_KEY)] = altimeter_data[0];
-        if(!isHTTP)
-          payload[F(ALTITUDE_KEY)] = altimeter_data[1];
-    }
-    void saveCSVToFile(SdFile* my_file) override{// Save data to MicroSD card
-      for(uint8_t i=0; i<ALTIMETER_SIZE; i++){
-        my_file->print(altimeter_data[i]);
-        my_file->print(F(","));
-      }
-    }
+    Altimeter();// Create object
+    ~Altimeter();// Release memory
+    void gatherData() override;// Get data from component
+    void printData() override;// Display data for test
+    void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
+    void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
 };
