@@ -45,8 +45,12 @@
 class NTC_Thermistor : public Thermistor {
 
   private:
-    // Default analog resolution for Arduino board
-    static const int DEFAULT_ADC_RESOLUTION = 1023;
+    // Default analog resolution
+    #if defined(ESP32) || defined(ESP8266)
+      static const int DEFAULT_ADC_RESOLUTION = 4095;
+    #else
+      static const int DEFAULT_ADC_RESOLUTION = 1023;
+    #endif
 
     int pin; // an analog port.
     double referenceResistance;

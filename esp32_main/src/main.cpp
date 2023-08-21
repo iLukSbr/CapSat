@@ -1,20 +1,3 @@
-/* === CapSat CubeSat code === */
-/* === 2ª OBSAT MCTI - 2023 === */
-/* === 2nd Brazilian Satellite Olympiad === */
-/* === Author: Lucas Yukio Fukuda Matsumoto === */
-
-/* === Team === */
-/*
-  Tutor: Prof. Dr. Angela Cristina Cararo (PUCPR)
-  Students:
-  Eduardo Ferronato Pelle Guin (PUCPR)
-  Lucas Yukio Fukuda Matsumoto (UTFPR)
-  Thiago Augusto Pino Gomes (PUCPR)
-
-  PUCPR = Pontifícia Universidade Católica do Paraná
-  UTFPR = Universidade Tecnológica Federal do Paraná
-*/
-
 /*
 MIT License
 
@@ -37,6 +20,23 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+*/
+
+/* === CapSat CubeSat code === */
+/* === 2ª OBSAT MCTI - 2023 === */
+/* === 2nd Brazilian Satellite Olympiad === */
+/* === Author: Lucas Yukio Fukuda Matsumoto === */
+
+/* === Team === */
+/*
+  Tutor: Prof. Dr. Angela Cristina Cararo (PUCPR)
+  Students:
+  Eduardo Ferronato Pelle Guin (PUCPR)
+  Lucas Yukio Fukuda Matsumoto (UTFPR)
+  Thiago Augusto Pino Gomes (PUCPR)
+
+  PUCPR = Pontifícia Universidade Católica do Paraná
+  UTFPR = Universidade Tecnológica Federal do Paraná
 */
 
 #include "pch.h"
