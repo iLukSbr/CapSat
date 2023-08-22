@@ -53,5 +53,5 @@ class Ozonoscope : public Component{
     void printData() override;// Display data for test
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
     void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
-    void setClimateParameters(const float& temperature, const float& humidity);// Define climate parameters
+    void setClimateParameters(float temperature, float humidity);// Define climate parameters
 };

@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include <cmath>// Math functions
+
 #include "pch.h"
 #include "Ozonoscope.h"
 
@@ -55,6 +57,6 @@ void Ozonoscope::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
     my_file->print(F(","));
 }
 
-void setClimateParameters(const float& temperature, const float& humidity){// Define climate parameters
-    MQ131.setEnv((uint8_t)temperature, (int8_t)humidity);
+void Ozonoscope::setClimateParameters(float temperature, float humidity){// Define climate parameters
+    MQ131.setEnv((int8_t)round(temperature), (uint8_t)round(humidity));
 }
