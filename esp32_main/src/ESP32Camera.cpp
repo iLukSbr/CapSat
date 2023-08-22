@@ -42,7 +42,7 @@ ESP32Camera::~ESP32Camera(){
 
 void ESP32Camera::gatherData(){// Get data from component
     camSerial->println(ESP32CAMERA_REQUEST_ID);
-    while(camSerial->available())// If data was received
+    if(camSerial->available())// If data was received
         camSerial->read()==1 ? esp32camera_data=true : esp32camera_data=false;// True if a picture was successfully taken in the last attempt
 }
 
