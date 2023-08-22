@@ -192,8 +192,8 @@ void beginI2C(){
   void beginWiFi(){
     WiFi.begin(F(WIFI_SSID), F(WIFI_PASSWORD));
     WiFi.setSleep(false);
-    while (WiFi.status() != WL_CONNECTED){
-      delay(1000);
+    while(WiFi.status() != WL_CONNECTED){
+      delay(CALIBRATION_DELAY);
       Serial.println(F("Waiting for WiFi connection..."));
     }
   }

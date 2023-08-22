@@ -28,8 +28,8 @@
 
 /* === Definitions === */
 #define SERIAL_BAUD_RATE 230400// Serial baud rate
-#define SSID "OBSAT"// Wi-Fi SSID
-#define PASSWORD "OBSAT2023"// Wi-Fi password
+#define WIFI_SSID "OBSAT"// Wi-Fi SSID
+#define WIFI_PASSWORD "OBSAT2023"// Wi-Fi password
 #define CALIBRATION_DELAY 1000// Delay to retry calibration (ms)
 #define DEFAULT_PICTURE_DELAY 60000// Delay to take a picture (ms)
 #define PICTURE_SUCCESS 1// Picture taken succesfully code
@@ -48,6 +48,15 @@ HardwareSerial* camSerial = nullptr;// UART for main MCU communication
 
 time_t stopwatch = 0;
 uint64_t picture_number = 0;
+
+void beginWiFi(){
+  WiFi.begin(F(WIFI_SSID), F(WIFI_PASSWORD));
+  WiFi.setSleep(false);
+  while(WiFi.status() != WL_CONNECTED){
+    delay(CALIBRATION_DELAY);
+    Serial.println(F("Waiting for WiFi connection..."));
+  }
+}
 
 void setup(){
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);// Disable brownout detector
@@ -98,6 +107,7 @@ void setup(){
   }
   camSerial = new HardwareSerial(UART_NUM_0);
   camSerial->begin(SERIAL_BAUD_RATE);
+  beginWiFi();
 }
 
 void loop(){
