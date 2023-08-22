@@ -31,13 +31,16 @@ SOFTWARE.
 #include <ThreeWire.h>
 #include <RtcDS1302.h>
 
+#define RTCLOCK_DAT_PIN 1// RTC I/O data pin
+#define RTCLOCK_CLK_PIN 2// RTC clock pin
+#define RTCLOCK_RST_PIN 3// RTC CE reset pin
 #define RTCLOCK_SIZE 21// Date and time string length
 #define DATE_TIME_KEY "id"// JSON date and time key
 
 class RTClock : public Component{
   private:
-    ThreeWire* myWire = nullptr;
-    RtcDS1302<ThreeWire>* Rtc = nullptr;
+    ThreeWire* myWire;
+    RtcDS1302<ThreeWire>* Rtc;
     char clock_data[RTCLOCK_SIZE] = {0};
     
   public:

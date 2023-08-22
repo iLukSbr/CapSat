@@ -25,9 +25,10 @@ SOFTWARE.
 #include "pch.h"
 #include "RTClock.h"
 
-RTClock::RTClock(const uint16_t& year, const uint8_t month, const uint8_t day, const uint8_t hour, const uint8_t minute, const uint8_t second){// Create object
-    myWire = new ThreeWire(6, 7, 5);// Instatiate pins
-    Rtc = new RtcDS1302<ThreeWire>(*myWire);// Instatiate RTC
+RTClock::RTClock(const uint16_t& year, const uint8_t month, const uint8_t day, const uint8_t hour, const uint8_t minute, const uint8_t second):
+    myWire(new ThreeWire(RTCLOCK_DAT_PIN, RTCLOCK_CLK_PIN, RTCLOCK_RST_PIN)),// Instatiate pins
+    Rtc(new RtcDS1302<ThreeWire>(*myWire))// Instatiate RTC
+{// Create object
     if(Rtc->GetIsWriteProtected())// If RTC is read only
         Rtc->SetIsWriteProtected(false);// Enable RTC write
     if(!Rtc->GetIsRunning())// If RTC is off

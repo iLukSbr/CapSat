@@ -25,9 +25,10 @@ SOFTWARE.
 #include "pch.h"
 #include "MicroSDReaderWriter.h"
 
-MicroSDReaderWriter::MicroSDReaderWriter(const char* _datafileName){// Create object
-    sd = new SdFat();
-    my_file = new SdFile();
+MicroSDReaderWriter::MicroSDReaderWriter(const char* _datafileName):
+    sd(new SdFat()),// MicroSD card
+    my_file(new SdFile())// File
+{// Create object
     strcpy(datafileName, _datafileName);// Copy filename (date and hour)
     strcat(datafileName, FILE_EXTENSION);// Append file extension
     while(!sd->begin(SD_CS_PIN, SPI_FULL_SPEED)){

@@ -36,7 +36,7 @@ Digital output = 1 - 3 V independent from source
 // MH-RD rain sensor
 class Rainmeter : public Component{
   private:
-    uint8_t rainmeter_data = 0;
+    uint8_t rainmeter_data;
     
   public:
     Rainmeter();// Create object

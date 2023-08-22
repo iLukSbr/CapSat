@@ -25,8 +25,9 @@ SOFTWARE.
 #include "pch.h"
 #include "Altimeter.h"
 
-Altimeter::Altimeter(){// Create object
-    baro = new MS5611();// Instantiate sensor
+Altimeter::Altimeter():
+    baro(new MS5611())// Instantiate sensor
+{// Create object
     baro->begin();// Start sensor
     baro->pressureOffset = MS5611_PRESSURE_OFFSET;// Calibrate according to local air pressure (Pa)
 }

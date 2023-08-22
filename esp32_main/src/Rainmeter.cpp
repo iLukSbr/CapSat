@@ -25,7 +25,9 @@ SOFTWARE.
 #include "pch.h"
 #include "Rainmeter.h"
 
-Rainmeter::Rainmeter(){// Create object
+Rainmeter::Rainmeter():
+    rainmeter_data(0)
+{// Create object
     pinMode(RAINMETER_PIN, INPUT);// Defines RAINMETER_PIN as input
 }
 

@@ -42,7 +42,7 @@ SOFTWARE.
 
 class Multimeter : public Component{
   private:
-    INA219_WE* mult = nullptr;
+    INA219_WE* mult;
     float multimeter_data[MULTIMETER_SIZE] = {0.f};
     
   public:

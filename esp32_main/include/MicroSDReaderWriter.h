@@ -44,8 +44,8 @@ SOFTWARE.
 
 class MicroSDReaderWriter{
   private:
-    SdFat* sd = nullptr;// MicroSD card
-    SdFile* my_file = nullptr;// File
+    SdFat* sd;// MicroSD card
+    SdFile* my_file;// File
     char datafileName[DATAFILE_NAME_LENGTH];// Filename
     
   public:

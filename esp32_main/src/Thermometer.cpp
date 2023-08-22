@@ -25,9 +25,11 @@ SOFTWARE.
 #include "pch.h"
 #include "Thermometer.h"
 
-Thermometer::Thermometer(){// Create object
-    originThermistor = new NTC_Thermistor(NTC_SENSOR_PIN, NTC_REFERENCE_RESISTANCE, NTC_NOMINAL_RESISTANCE, NTC_NOMINAL_TEMPERATURE, NTC_B_VALUE);
-    thermistor = new SmoothThermistor(originThermistor, NTC_SMOOTHING_FACTOR);
+Thermometer::Thermometer():
+    originThermistor(new NTC_Thermistor(NTC_SENSOR_PIN, NTC_REFERENCE_RESISTANCE, NTC_NOMINAL_RESISTANCE, NTC_NOMINAL_TEMPERATURE, NTC_B_VALUE)),
+    thermistor(new SmoothThermistor(originThermistor, NTC_SMOOTHING_FACTOR))
+{// Create object
+
 }
 
 Thermometer::~Thermometer(){// Release memory

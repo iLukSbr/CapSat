@@ -43,8 +43,8 @@ SOFTWARE.
 
 class Humidimeter : public Component{
   private:
-    AHTxx* aht21 = nullptr;
-    DFRobot_ENS160_I2C* ens160 = nullptr;
+    AHTxx* aht21;
+    DFRobot_ENS160_I2C* ens160;
     float humidimeter_data[HUMIDIMETER_SIZE] = {0.f};
     
   public:

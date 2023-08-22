@@ -25,8 +25,10 @@ SOFTWARE.
 #include "pch.h"
 #include "Magnetometer.h"
 
-Magnetometer::Magnetometer(){// Create object
-    compass = new QMC5883L();// Instantiate compass
+Magnetometer::Magnetometer():
+    magnetometer_data(0),
+    compass(new QMC5883L())// Instantiate compass
+{// Create object
     compass->init();// Calibrate moving throug an 8 pattern on a flat surface
     compass->setSamplingRate(50);// Amostras (Hz)
 }

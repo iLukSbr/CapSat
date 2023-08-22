@@ -40,7 +40,7 @@ SOFTWARE.
 
 class Altimeter : public Component{
   private:
-    MS5611* baro = nullptr;
+    MS5611* baro;
     float altimeter_data[ALTIMETER_SIZE] = {0.f};
     
   public:

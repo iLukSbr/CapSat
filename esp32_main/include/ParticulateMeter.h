@@ -62,11 +62,11 @@ SOFTWARE.
 class ParticulateMeter : public Component{
   private:
     #if defined(ESP32) || defined(ESP8266)// For ESP
-      HardwareSerial* pmSerial = nullptr;
+      HardwareSerial* pmSerial;
     #else// For Arduino
-      SoftwareSerial* pmSerial = nullptr;
+      SoftwareSerial* pmSerial;
     #endif
-    Adafruit_PM25AQI* aqi = nullptr;
+    Adafruit_PM25AQI* aqi;
     uint16_t particulate_meter_data[PM_SIZE] = {0};
     
   public:

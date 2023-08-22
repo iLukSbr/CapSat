@@ -25,8 +25,9 @@ SOFTWARE.
 #include "pch.h"
 #include "Multimeter.h"
 
-Multimeter::Multimeter(){// Create object
-    mult = new INA219_WE(0x40);// I²C address
+Multimeter::Multimeter():
+    mult(new INA219_WE(0x40))// I²C address
+{// Create object
     while(!mult->init()){// Calibrating
         delay(1000);
         Serial.println(F("Aguardando o voltímetro."));

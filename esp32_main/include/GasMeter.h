@@ -47,7 +47,7 @@ SOFTWARE.
 
 class GasMeter : public Component{
   private:
-    MICS6814* gas = nullptr;
+    MICS6814* gas;
     float gas_meter_data[GAS_METER_SIZE] = {0.f};
     
   public:

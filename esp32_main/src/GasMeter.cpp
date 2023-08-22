@@ -25,8 +25,9 @@ SOFTWARE.
 #include "pch.h"
 #include "GasMeter.h"
 
-GasMeter::GasMeter(){// Create object
-    gas = new MICS6814(GAS_METER_CO_PIN, GAS_METER_NO2_PIN, GAS_METER_NH3_PIN);
+GasMeter::GasMeter():
+    gas(new MICS6814(GAS_METER_CO_PIN, GAS_METER_NO2_PIN, GAS_METER_NH3_PIN))
+{// Create object
     gas->calibrate();
 }
 

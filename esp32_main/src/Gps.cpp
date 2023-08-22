@@ -25,13 +25,14 @@ SOFTWARE.
 #include "pch.h"
 #include "Gps.h"
 
-Gps::Gps(){// Create object
-    gps = new TinyGPSPlus();
+Gps::Gps():
+    gps(new TinyGPSPlus()),
     #if defined(ESP32) || defined(ESP8266)// For ESP
-        gpsSerial = new HardwareSerial(UART_NUM_0);
+      gpsSerial(new HardwareSerial(UART_NUM_0))
     #else// For Arduino
-        gpsSerial = new SoftwareSerial(GPS_RX_PIN, GPS_TX_PIN);
+      gpsSerial(new SoftwareSerial(GPS_RX_PIN, GPS_TX_PIN)) 
     #endif
+{// Create object
     gpsSerial->begin(SERIAL_BAUD_RATE);// Serial baud rate
     do{
         gatherData();

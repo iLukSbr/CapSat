@@ -25,7 +25,9 @@ SOFTWARE.
 #include "pch.h"
 #include "UVRadiometer.h"
 
-UVRadiometer::UVRadiometer(){// Create object
+UVRadiometer::UVRadiometer():
+    uv_radiometer_data(0)
+{// Create object
 
 }
 

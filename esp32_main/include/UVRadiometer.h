@@ -37,7 +37,7 @@ Analog output = 0 - 1 V independent from source
 
 class UVRadiometer : public Component{
   private:
-    uint8_t uv_radiometer_data = 0;
+    uint8_t uv_radiometer_data;
     
   public:
     UVRadiometer();// Create object

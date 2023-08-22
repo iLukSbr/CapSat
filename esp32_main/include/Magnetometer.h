@@ -37,8 +37,8 @@ SOFTWARE.
 
 class Magnetometer : public Component{
   private:
-    QMC5883L* compass = nullptr;
-    int magnetometer_data = 0;
+    QMC5883L* compass;
+    int magnetometer_data;
 
   public:
     Magnetometer();// Create object

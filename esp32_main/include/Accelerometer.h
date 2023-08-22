@@ -38,9 +38,9 @@ SOFTWARE.
 
 class Accelerometer : public Component{
   private:
-    bfs::Mpu6500* imu = nullptr;
-    const String ACCELEROMETER_KEY = F("acelerometro");// JSON accelerometer key
-    const String GYROSCOPE_KEY = F("giroscopio");// JSON gyroscope key
+    bfs::Mpu6500* imu;
+    const String ACCELEROMETER_KEY;// JSON accelerometer key
+    const String GYROSCOPE_KEY;// JSON gyroscope key
     float accelerometer_data[ACCELEROMETER_SIZE] = {0.f};
 
   public:

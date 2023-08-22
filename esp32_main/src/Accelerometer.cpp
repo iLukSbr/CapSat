@@ -25,8 +25,11 @@ SOFTWARE.
 #include "pch.h"
 #include "Accelerometer.h"
 
-Accelerometer::Accelerometer(){// Create object
-    imu = new bfs::Mpu6500();
+Accelerometer::Accelerometer():
+    imu(new bfs::Mpu6500()),
+    ACCELEROMETER_KEY(F("acelerometro")),
+    GYROSCOPE_KEY(F("giroscopio"))
+{// Create object
     imu->Config(&Wire, bfs::Mpu6500::I2C_ADDR_PRIM);// I²C address 0x68
     while(!imu->Begin()){// Waiting for sensor communication
         delay(CALIBRATION_DELAY);

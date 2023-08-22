@@ -25,9 +25,10 @@ SOFTWARE.
 #include "pch.h"
 #include "Humidimeter.h"
 
-Humidimeter::Humidimeter(){// Create object
-    aht21 = new AHTxx(AHTXX_ADDRESS_X38, AHT2x_SENSOR);// Instantiate humidity/temperature sensor
-    ens160 = new DFRobot_ENS160_I2C(&Wire, 0x53);// Instantiate gas sensor I²C addres 0x53
+Humidimeter::Humidimeter():
+    aht21(new AHTxx(AHTXX_ADDRESS_X38, AHT2x_SENSOR)),// Instantiate humidity/temperature sensor
+    ens160(new DFRobot_ENS160_I2C(&Wire, 0x53))// Instantiate gas sensor I²C addres 0x53
+{// Create object
     while(aht21->begin() != true){// Calibrate AHT21
         delay(CALIBRATION_DELAY);
         Serial.println(F("Waiting for humidity sensor..."));

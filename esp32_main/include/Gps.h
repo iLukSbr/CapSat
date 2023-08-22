@@ -57,11 +57,11 @@ SOFTWARE.
 class Gps : public Component{
   private:
     #if defined(ESP32) || defined(ESP8266)// For ESP
-      HardwareSerial* gpsSerial = nullptr;
+      HardwareSerial* gpsSerial;
     #else// For Arduino
-      SoftwareSerial* gpsSerial = nullptr;
+      SoftwareSerial* gpsSerial;
     #endif
-    TinyGPSPlus* gps = nullptr;
+    TinyGPSPlus* gps;
     double gps_data[GPS_SIZE] = {0.f};
     
   public:

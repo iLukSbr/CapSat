@@ -50,8 +50,8 @@ Analog output = 0 - 5 V
 
 class Thermometer : public Component{
   private:
-    Thermistor* originThermistor = nullptr;
-    Thermistor* thermistor = nullptr;
+    Thermistor* originThermistor;
+    Thermistor* thermistor;
     float thermometer_data = 0.f;
     
   public:

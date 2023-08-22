@@ -25,13 +25,14 @@ SOFTWARE.
 #include "pch.h"
 #include "ParticulateMeter.h"
 
-ParticulateMeter::ParticulateMeter(){// Create object
+ParticulateMeter::ParticulateMeter():
     #if defined(ESP32) || defined(ESP8266)// For ESP
-        pmSerial = new HardwareSerial(UART_NUM_1);
+        pmSerial(new HardwareSerial(UART_NUM_1)),
     #else// For Arduino
-        pmSerial = new SoftwareSerial(PM_RX_PIN, PM_TX_PIN);
+        pmSerial(new SoftwareSerial(PM_RX_PIN, PM_TX_PIN)),
     #endif
-    aqi = new Adafruit_PM25AQI();
+    aqi(new Adafruit_PM25AQI())
+{// Create object
     pmSerial->begin(SERIAL_BAUD_RATE);
     while(!aqi->begin_UART(pmSerial)){
         delay(CALIBRATION_DELAY);
