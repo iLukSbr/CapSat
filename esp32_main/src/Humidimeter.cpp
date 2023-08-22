@@ -80,3 +80,7 @@ void Humidimeter::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
         my_file->print(F(","));
     }
 }
+
+const float Humidimeter::getHumidity() const{// Return humidity (%)
+    return humidimeter_data[0];
+}

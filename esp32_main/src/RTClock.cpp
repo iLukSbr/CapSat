@@ -60,7 +60,7 @@ void RTClock::printData(){// Display data for test
 
 void RTClock::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries
     if(!isHTTP)
-        payload[F(DATE_TIME_KEY)] = clock_data;
+        doc[F(DATE_TIME_KEY)] = clock_data;
 }
 
 void RTClock::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card

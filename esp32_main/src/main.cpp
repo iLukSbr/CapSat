@@ -105,7 +105,7 @@ SOFTWARE.
 /* === Constant values === */
 #define TEAM_ID 99// Team ID number
 #define HTTP_SENDING_DELAY 4000// HTTP sending delay (ms)
-#define COMPONENTS_VECTOR_SIZE 13// Components quantity inside vector
+#define COMPONENTS_VECTOR_SIZE 14// Components quantity inside vector
 #define SERIAL_BAUD_RATE 230400// Serial baud rate
 #define RELAY_PIN 10// Relay pin
 
@@ -119,6 +119,7 @@ SOFTWARE.
 /* === Components instantiation === */
 Accelerometer* mpu9250;
 Altimeter* ms5611;
+ESP32Camera* esp32cam;
 Rainmeter* mhrd;
 GasMeter* mics6814;
 Gps* m8n;
@@ -133,12 +134,13 @@ Humidimeter* ens160aht21;
 Multimeter* ina219;
 
 void newAll(){
-  m8n = new Gps();
-  mhrtc2 = new RTClock(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond());
-  microsd = new MicroSDReaderWriter(mhrtc2->getDateTime());
+  m8n = new Gps();// UART
+  mhrtc2 = new RTClock(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond());// ThreeWire
+  microsd = new MicroSDReaderWriter(mhrtc2->getDateTime());// SPI
 
-  // SPI
+  // UART
   pmsa003 = new ParticulateMeter();
+  esp32cam = new ESP32Camera();
 
   // I²C
   mpu9250 = new Accelerometer();
@@ -167,11 +169,12 @@ void pushAll(){
   component_list.push_back(dynamic_cast<Component*>(ms5611));
   component_list.push_back(dynamic_cast<Component*>(ina219));
   component_list.push_back(dynamic_cast<Component*>(qmc5883l));
+  component_list.push_back(dynamic_cast<Component*>(ens160aht21));
+  component_list.push_back(dynamic_cast<Component*>(ntc));
+  component_list.push_back(dynamic_cast<Component*>(mq131));
   component_list.push_back(dynamic_cast<Component*>(mhrd));
   component_list.push_back(dynamic_cast<Component*>(mics6814));
   component_list.push_back(dynamic_cast<Component*>(taidacent));
-  component_list.push_back(dynamic_cast<Component*>(mq131));
-  component_list.push_back(dynamic_cast<Component*>(ntc));
   component_list.push_back(dynamic_cast<Component*>(mhrd));
 }
 
@@ -195,15 +198,20 @@ void beginI2C(){
 void beginAll(){
   beginI2C();
   newAll();
+  ens160aht21->gatherData();
+  ntc->gatherData();
+  mq131->setClimateParameters(ntc->getTemperature(), ens160aht21->getHumidity());
   #if defined(ESP32) || defined(ESP8266)// For ESP
     beginWiFi();
   #endif
+  beginCAM();
 }
 
 /* === Gather components data === */
 void gatherDataAll(){
   for(auto element : component_list)
     element->gatherData();
+  mq131->setClimateParameters(ntc->getTemperature(), ens160aht21->getHumidity());
 }
 
 /* === Display gathered data === */

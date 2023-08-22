@@ -63,7 +63,7 @@ void UVRadiometer::gatherData(){// Get data from component
 
 void UVRadiometer::printData(){// Display data for test
     Serial.print(F("Radiometer: "));
-    Serial.println(uv_radiometer_data);
+    Serial.print(uv_radiometer_data);
     Serial.println();
 }
 

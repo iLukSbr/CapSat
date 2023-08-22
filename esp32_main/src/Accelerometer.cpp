@@ -62,6 +62,7 @@ void Accelerometer::printData(){// Display data for test
         Serial.print(accelerometer_data[i]);
         Serial.print(F(" "));
     }
+    Serial.println();
 }
 
 void Accelerometer::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries

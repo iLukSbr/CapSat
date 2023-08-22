@@ -73,6 +73,7 @@ void ParticulateMeter::printData(){// Display data for test
         Serial.print(particulate_meter_data[i]);
         Serial.print(F(" "));
     }
+    Serial.println();
 }
 
 void ParticulateMeter::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries

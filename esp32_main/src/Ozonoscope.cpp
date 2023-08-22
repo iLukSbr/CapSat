@@ -26,36 +26,19 @@ SOFTWARE.
 #include "Ozonoscope.h"
 
 Ozonoscope::Ozonoscope(){// Create object
-    MQ131 = new MQUnifiedsensor(OZONOSCOPE_BOARD, PIN_MAX_VOLTAGE, ADC_RESOLUTION, OZONOSCOPE_PIN, OZONOSCOPE_NAME);
-    MQ131->setRegressionMethod(OZONOSCOPE_REGRESSION_METHOD);// Set regression method a*ratio^b
-    MQ131->setA(OZONOSCOPE_A_PARAMETER);// Configure the a to to calculate O3 concentration
-    MQ131->setB(OZONOSCOPE_B_PARAMETER);// Configure the b to to calculate O3 concentration
-    MQ131->init();// Start
-    float calcR0 = 0.f;
-    for(int i = 1; i<=OZONOSCOPE_CALIBRATION_LOOP; i++){
-        MQ131->update();// Update data reading the voltage from the analog pin
-        calcR0 += MQ131->calibrate(OZONOSCOPE_CLEAN_AIR_RATIO);// Calibrate
-    }
-    MQ131->setR0(calcR0/OZONOSCOPE_CALIBRATION_LOOP);// Set R0 and calibrate
-    while(isinf(calcR0)){
-        delay(CALIBRATION_DELAY);
-        Serial.println(F("Waiting for ozonoscope..."));
-    }
-    while(calcR0 == 0){
-        delay(CALIBRATION_DELAY);
-        Serial.println(F("Waiting for ozonoscope..."));
-    }
-    MQ131->setOffset(OZONOSCOPE_OFFSET);// Calibration offset
+  MQ131.begin(OZONOSCOPE_HEATER_PIN, OZONOSCOPE_DATA_PIN, LOW_CONCENTRATION, OZONOSCOPE_RL, OZONOSCOPE_CALIBRATION_CYCLE); 
+  MQ131.setEnv(temperature, humidity);// Define climate parameters
+  Serial.println(F("Calibrating ozonoscope..."));
+  MQ131.calibrate();// Calibrate
 }
 
 Ozonoscope::~Ozonoscope(){// Release memory
-    delete MQ131;
+
 }
 
 void Ozonoscope::gatherData(){// Get data from component
-    MQ131->update();// Get data
-    MQ131->readSensorR0Rs();// Calibrate
-    ozonoscope_data = MQ131->getConcentration();// Ozone concentration in air (ppb)
+    MQ131.sample();// Get data
+    ozonoscope_data = MQ131.getO3(PPB);// Ozone concentration in air (ppb)
 }
 
 void Ozonoscope::printData(){// Display data for test
@@ -71,4 +54,8 @@ void Ozonoscope::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& pay
 void Ozonoscope::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
     my_file->print(ozonoscope_data, OZONOSCOPE_DECIMAL_PLACES);
     my_file->print(F(","));
+}
+
+void setClimateParameters(const float& temperature, const float& humidity){
+    MQ131.setEnv((uint8_t)temperature, (int8_t)humidity);
 }
