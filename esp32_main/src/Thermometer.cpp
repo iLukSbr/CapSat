@@ -54,6 +54,6 @@ void Thermometer::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
     my_file->print(F(","));
 }
 
-const float Thermometer::getTemperature const(){// Return temperature (°C)
+const float Thermometer::getTemperature() const{// Return temperature (°C)
     return thermometer_data;
 }

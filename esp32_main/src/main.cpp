@@ -60,6 +60,9 @@ SOFTWARE.
 #endif
 
 /* === UART Interface === */
+// ESP32-CAM
+#include "ESP32Camera.h"
+
 // PMSA003 particulate meter
 #include "ParticulateMeter.h"
 
@@ -204,7 +207,6 @@ void beginAll(){
   #if defined(ESP32) || defined(ESP8266)// For ESP
     beginWiFi();
   #endif
-  beginCAM();
 }
 
 /* === Gather components data === */

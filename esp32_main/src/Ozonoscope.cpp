@@ -27,7 +27,6 @@ SOFTWARE.
 
 Ozonoscope::Ozonoscope(){// Create object
   MQ131.begin(OZONOSCOPE_HEATER_PIN, OZONOSCOPE_DATA_PIN, LOW_CONCENTRATION, OZONOSCOPE_RL, OZONOSCOPE_CALIBRATION_CYCLE); 
-  MQ131.setEnv(temperature, humidity);// Define climate parameters
   Serial.println(F("Calibrating ozonoscope..."));
   MQ131.calibrate();// Calibrate
 }
@@ -56,6 +55,6 @@ void Ozonoscope::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
     my_file->print(F(","));
 }
 
-void setClimateParameters(const float& temperature, const float& humidity){
+void setClimateParameters(const float& temperature, const float& humidity){// Define climate parameters
     MQ131.setEnv((uint8_t)temperature, (int8_t)humidity);
 }

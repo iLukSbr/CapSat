@@ -38,6 +38,7 @@ Analog output = 0 - 4.2 V (need level shifter)
 #define OZONOSCOPE_DATA_PIN 6// Ozonoscope analog pin
 #define OZONOSCOPE_HEATER_PIN 4// Ozonoscope heater digital pin
 #define OZONOSCOPE_CALIBRATION_CYCLE 11// Number of stable cycles to consider calibrated
+#define OZONOSCOPE_RL 1000000// 1M heater resistor (Ohm)
 #define OZONOSCOPE_DECIMAL_PLACES 4// Concentration decimal places
 #define O3_KEY "O3"// JSON ozone concentration key
 
@@ -52,5 +53,5 @@ class Ozonoscope : public Component{
     void printData() override;// Display data for test
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
     void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
-    void setClimateParameters(const float& temperature, const float& humidity);
+    void setClimateParameters(const float& temperature, const float& humidity);// Define climate parameters
 };

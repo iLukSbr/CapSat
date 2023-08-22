@@ -1,11 +1,11 @@
 #include "pch.h"
-#include "ESP32_camera.h"
+#include "ESP32Camera.h"
 
 ESP32Camera::ESP32Camera(){
     
 }
 
-ESP32Camera::~ESP32Camera{
+ESP32Camera::~ESP32Camera(){
     
 }
 
