@@ -26,6 +26,15 @@ SOFTWARE.
 
 #include "Component.h"
 
+#if defined(ESP32) || defined(ESP8266)// For ESP
+  // UART hardware interface
+  #include <driver/uart.h>
+  #include <HardwareSerial.h>
+#else// For Arduino
+  // UART software interface
+  #include <SoftwareSerial.h>
+#endif
+
 // uBlox GY-GPSV3-NEO-M8N-0-10 GPS
 // https://github.com/mikalhart/TinyGPSPlus
 #include <TinyGPS++.h>
@@ -43,15 +52,6 @@ SOFTWARE.
 #if !defined(ESP32) && !defined(ESP8266)// For Arduino
   #define GPS_TX_PIN 8// GPS UART RX pin
   #define GPS_RX_PIN 9// GPS UART TX pin
-#endif
-
-#if defined(ESP32) || defined(ESP8266)// For ESP
-  // UART hardware interface
-  #include <driver/uart.h>
-  #include <HardwareSerial.h>
-#else// For Arduino
-  // UART software interface
-  #include <SoftwareSerial.h>
 #endif
 
 class Gps : public Component{

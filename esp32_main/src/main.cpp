@@ -179,6 +179,7 @@ void pushAll(){
   component_list.push_back(dynamic_cast<Component*>(mics6814));
   component_list.push_back(dynamic_cast<Component*>(taidacent));
   component_list.push_back(dynamic_cast<Component*>(mhrd));
+  component_list.push_back(dynamic_cast<Component*>(esp32cam));
 }
 
 /* === Components start and calibration === */

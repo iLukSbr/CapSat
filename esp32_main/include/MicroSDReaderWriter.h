@@ -28,7 +28,8 @@ SOFTWARE.
 // https://github.com/greiman/SdFat
 #include <SdFat.h>
 
-#define JSON_FORMAT// Save as JSON_FORMAT or CSV_FORMAT
+#define JSON_FORMAT// Save as .json
+// #define CSV_FORMAT// Save as .csv
 
 #ifdef JSON_FORMAT
   #define FILE_EXTENSION ".json"// Saving file extension
