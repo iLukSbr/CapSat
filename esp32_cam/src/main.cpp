@@ -38,7 +38,7 @@
 
 /* === Camera definitions === */
 #define HZ_CLK_FREQ 6000000
-#define EEPROM_SIZE 1// Define the number of bytes you want to access
+#define EEPROM_SIZE 4// Define the number of bytes you want to access
 #define CAMERA_MODEL_AI_THINKER
 #include "camera_pins.h"// Camera models
 
