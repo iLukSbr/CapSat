@@ -112,9 +112,11 @@ void setup(){
 
 void loop(){
   uint8_t uart_code_received = 0;
-  if(camSerial->available())
-    uint8_t uart_code_received = camSerial->read();
-  if(uart_code_received == 1 || millis() - stopwatch > DEFAULT_PICTURE_DELAY){
+  if(camSerial->available()){
+    while(uart_code_received != 1 && millis() - stopwatch < DEFAULT_PICTURE_DELAY)
+      uart_code_received = camSerial->read();
+  }
+  if(millis() - stopwatch >= DEFAULT_PICTURE_DELAY){
     camera_fb_t* fb = esp_camera_fb_get();// Take a picture with camera
     while(!fb)
       Serial.println(F("Waiting, camera is trying to take a picture..."));
@@ -129,7 +131,7 @@ void loop(){
       delay(CALIBRATION_DELAY);
       file = fs.open(path.c_str(), FILE_WRITE);
     }
-    file.write(fb->buf, fb->len);// payload (image), payload length
+    file.write(fb->buf, fb->len);// Payload (image), payload length
     EEPROM.write(0, picture_number);
     EEPROM.commit();
     file.close();
