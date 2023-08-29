@@ -30,11 +30,17 @@ SOFTWARE.
 // https://github.com/ostaquet/Arduino-MQ131-driver
 #include <MQ131.h>
 
+// ADS1115 ADC 16 bits
+// https://github.com/wollewald/ADS1115_WE
+#include <ADS1115_WE.h>
+#include <Wire.h>
+
 /*
 VIN = 5 V
 Analog output = 0 - 4.2 V (need level shifter)
 */
 
+#define ADC_I2C_ADDRESS 0x48// ADS1115 I²C address
 #define OZONOSCOPE_DATA_PIN 6// Ozonoscope analog pin
 #define OZONOSCOPE_HEATER_PIN 4// Ozonoscope heater digital pin
 #define OZONOSCOPE_CALIBRATION_CYCLE 11// Number of stable cycles to consider calibrated
@@ -45,6 +51,7 @@ Analog output = 0 - 4.2 V (need level shifter)
 class Ozonoscope : public Component{
   private:
     float ozonoscope_data = 0.f;
+    ADS1115_WE* adc;
     
   public:
     Ozonoscope();// Create object

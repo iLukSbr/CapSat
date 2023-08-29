@@ -49,8 +49,8 @@ SOFTWARE.
 #include <WiFi.h>
 
 // UART
-#include <driver/uart.h>
-#include <HardwareSerial.h>
+// #include <driver/uart.h>
+// #include <HardwareSerial.h>
 
 // SD Card ESP32
 #include <FS.h>
@@ -79,13 +79,13 @@ SOFTWARE.
 
 /* === Camera definitions === */
 #define HZ_CLK_FREQ 6000000
-#define EEPROM_SIZE 4// Define the number of bytes you want to access
+#define EEPROM_SIZE 8// Define the number of bytes you want to access
 #define CAMERA_MODEL_AI_THINKER
 #include "camera_pins.h"// Camera models
 
 /* === Pointers === */
 OV5640* ov5640 = nullptr;// Camera
-HardwareSerial* camSerial = nullptr;// UART for main MCU communication
+// HardwareSerial* camSerial = nullptr;// UART for main MCU communication
 
 time_t stopwatch = 0;
 uint64_t picture_number = 0;
@@ -146,17 +146,17 @@ void setup(){
     Serial.println(F("Initializing MicroSD card..."));
     delay(CALIBRATION_DELAY);
   }
-  camSerial = new HardwareSerial(UART_NUM_0);
-  camSerial->begin(SERIAL_BAUD_RATE);
+  // camSerial = new HardwareSerial(UART_NUM_0);
+  // camSerial->begin(SERIAL_BAUD_RATE);
   beginWiFi();
 }
 
 void loop(){
-  uint8_t uart_code_received = 0;
-  if(camSerial->available()){
-    while(uart_code_received != 1 && millis() - stopwatch < DEFAULT_PICTURE_DELAY)
-      uart_code_received = camSerial->read();
-  }
+  // uint8_t uart_code_received = 0;
+  // if(camSerial->available()){// UART communication
+  //   while(uart_code_received != 1 && millis() - stopwatch < DEFAULT_PICTURE_DELAY)
+  //     uart_code_received = camSerial->read();
+  // }
   if(millis() - stopwatch >= DEFAULT_PICTURE_DELAY){
     camera_fb_t* fb = esp_camera_fb_get();// Take a picture with camera
     while(!fb)
@@ -168,7 +168,7 @@ void loop(){
     fs::FS &fs = SD_MMC;
     File file = fs.open(path.c_str(), FILE_WRITE);
     while(!file){
-      Serial.println(F("Opening picutre file..."));
+      Serial.println(F("Opening picture file..."));
       delay(CALIBRATION_DELAY);
       file = fs.open(path.c_str(), FILE_WRITE);
     }
@@ -177,10 +177,10 @@ void loop(){
     EEPROM.commit();
     file.close();
     esp_camera_fb_return(fb);
-    camSerial->println(PICTURE_SUCCESS);
+    // camSerial->println(PICTURE_SUCCESS);
     stopwatch = millis();
   }
-  else
-    camSerial->println(PICTURE_FAILURE);
-  uart_code_received = 0;
+  // else
+    // camSerial->println(PICTURE_FAILURE);
+  // uart_code_received = 0;
 }

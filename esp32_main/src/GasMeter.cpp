@@ -26,9 +26,14 @@ SOFTWARE.
 #include "GasMeter.h"
 
 GasMeter::GasMeter():
-    gas(new MICS6814(GAS_METER_CO_PIN, GAS_METER_NO2_PIN, GAS_METER_NH3_PIN))
+    gas(new MICS6814(GAS_METER_CO_PIN, GAS_METER_NO2_PIN, GAS_METER_NH3_PIN)),
+    adc(new ADS1115_WE(ADC_I2C_ADDRESS))
 {// Create object
     gas->calibrate();
+    while(!adc->init())
+        Serial.println(F("Waiting for ADC..."));
+    adc->setMeasureMode(ADS1115_CONTINUOUS);
+    adc->setVoltageRange_mV(ADS1115_RANGE_4096);
 }
 
 GasMeter::~GasMeter(){// Release memory
