@@ -122,7 +122,7 @@ SOFTWARE.
 /* === Components === */
 Accelerometer* mpu9250;
 Altimeter* ms5611;
-ESP32Camera* esp32cam;
+// ESP32Camera* esp32cam;
 GasMeter* mics6814;
 Gps* m8n;
 Humidimeter* ens160aht21;
@@ -144,7 +144,7 @@ void newAll(){
 
   // UART
   pmsa003 = new ParticulateMeter();
-  esp32cam = new ESP32Camera();
+  // esp32cam = new ESP32Camera();
 
   // I²C
   ens160aht21 = new Humidimeter();
@@ -173,7 +173,7 @@ void pushAll(){
   component_list.push_back(dynamic_cast<Component*>(ds3231));
 
   // UART
-  component_list.push_back(dynamic_cast<Component*>(esp32cam));
+  // component_list.push_back(dynamic_cast<Component*>(esp32cam));
   component_list.push_back(dynamic_cast<Component*>(pmsa003));
 
   // I²C
