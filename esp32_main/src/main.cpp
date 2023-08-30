@@ -120,21 +120,30 @@ SOFTWARE.
 #define TEAM_KEY "equipe"// JSON team key
 
 /* === Components === */
+// Initial configuration
+Gps* m8n;
+MicroSDReaderWriter* microsd;
+RTClock* ds3231;
+
+// I²C
 Accelerometer* mpu9250;
 Altimeter* ms5611;
-// ESP32Camera* esp32cam;
-GasMeter* mics6814;
-Gps* m8n;
-Humidimeter* ens160aht21;
-Magnetometer* qmc5883l;
-MicroSDReaderWriter* microsd;
+// Humidimeter* ens160aht21;
+// Magnetometer* qmc5883l;
 Multimeter* ina219;
-Ozonoscope* mq131;
+
+// UART
+// ESP32Camera* esp32cam;
 ParticulateMeter* pmsa003;
-Rainmeter* mhrd;
-RTClock* ds3231;
-Thermometer* ntc;
-UVRadiometer* taidacent;
+
+// ADC I²C
+GasMeter* mics6814;
+// Ozonoscope* mq131;
+
+//Analog
+// Rainmeter* mhrd;
+// Thermometer* ntc;
+// UVRadiometer* taidacent;
 
 void newAll(){
   // Initial configuration
@@ -147,20 +156,20 @@ void newAll(){
   // esp32cam = new ESP32Camera();
 
   // I²C
-  ens160aht21 = new Humidimeter();
+  // ens160aht21 = new Humidimeter();
   ina219 = new Multimeter();
   mpu9250 = new Accelerometer();
   ms5611 = new Altimeter();
-  qmc5883l = new Magnetometer();
+  // qmc5883l = new Magnetometer();
 
   // ADC I²C
   mics6814 = new GasMeter();
-  mq131 = new Ozonoscope();
+  // mq131 = new Ozonoscope();
 
   // Analog
-  mhrd = new Rainmeter();
-  ntc = new Thermometer();
-  taidacent = new UVRadiometer();
+  // mhrd = new Rainmeter();
+  // ntc = new Thermometer();
+  // taidacent = new UVRadiometer();
 }
 
 /* === Component list === */
@@ -177,20 +186,20 @@ void pushAll(){
   component_list.push_back(dynamic_cast<Component*>(pmsa003));
 
   // I²C
-  component_list.push_back(dynamic_cast<Component*>(ens160aht21));
+  // component_list.push_back(dynamic_cast<Component*>(ens160aht21));
   component_list.push_back(dynamic_cast<Component*>(ina219));
   component_list.push_back(dynamic_cast<Component*>(mpu9250));
   component_list.push_back(dynamic_cast<Component*>(ms5611));
-  component_list.push_back(dynamic_cast<Component*>(qmc5883l));
+  // component_list.push_back(dynamic_cast<Component*>(qmc5883l));
   
   // ADC I²C
   component_list.push_back(dynamic_cast<Component*>(mics6814));
-  component_list.push_back(dynamic_cast<Component*>(mq131));
+  // component_list.push_back(dynamic_cast<Component*>(mq131));
 
   // Analog
-  component_list.push_back(dynamic_cast<Component*>(mhrd));
-  component_list.push_back(dynamic_cast<Component*>(ntc));  
-  component_list.push_back(dynamic_cast<Component*>(taidacent));
+  // component_list.push_back(dynamic_cast<Component*>(mhrd));
+  // component_list.push_back(dynamic_cast<Component*>(ntc));  
+  // component_list.push_back(dynamic_cast<Component*>(taidacent));
 }
 
 /* === Components start and calibration === */
