@@ -40,7 +40,7 @@ Arduino: VIN = 5 V
 Analog output = 0 - 5 V
 */
 
-#define NTC_SENSOR_PIN 5
+#define NTC_SENSOR_PIN 10// NTC sensor analog pin
 #define NTC_REFERENCE_RESISTANCE 9870
 #define NTC_NOMINAL_RESISTANCE 10000
 #define NTC_NOMINAL_TEMPERATURE 25

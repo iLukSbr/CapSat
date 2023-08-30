@@ -70,7 +70,7 @@ SOFTWARE.
 #include "Gps.h"
 
 /* === ThreeWire Interface === */
-// MH-RTC 2 clock
+// DS3231 RTC
 #include "RTClock.h"
 
 /* === I²C Interface === */
@@ -119,45 +119,48 @@ SOFTWARE.
 #define PAYLOAD_KEY "payload"// JSON payloade key
 #define TEAM_KEY "equipe"// JSON team key
 
-/* === Components instantiation === */
+/* === Components === */
 Accelerometer* mpu9250;
 Altimeter* ms5611;
 ESP32Camera* esp32cam;
-Rainmeter* mhrd;
 GasMeter* mics6814;
 Gps* m8n;
-MicroSDReaderWriter* microsd;
+Humidimeter* ens160aht21;
 Magnetometer* qmc5883l;
+MicroSDReaderWriter* microsd;
+Multimeter* ina219;
 Ozonoscope* mq131;
 ParticulateMeter* pmsa003;
-UVRadiometer* taidacent;
-RTClock* mhrtc2;
+Rainmeter* mhrd;
+RTClock* ds3231;
 Thermometer* ntc;
-Humidimeter* ens160aht21;
-Multimeter* ina219;
+UVRadiometer* taidacent;
 
 void newAll(){
+  // Initial configuration
   m8n = new Gps();// UART
-  mhrtc2 = new RTClock(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond());// ThreeWire
-  microsd = new MicroSDReaderWriter(mhrtc2->getDateTime());// SPI
+  ds3231 = new RTClock(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond());// I²C
+  microsd = new MicroSDReaderWriter(ds3231->getDateTime());// SPI
 
   // UART
   pmsa003 = new ParticulateMeter();
   esp32cam = new ESP32Camera();
 
   // I²C
+  ens160aht21 = new Humidimeter();
+  ina219 = new Multimeter();
   mpu9250 = new Accelerometer();
   ms5611 = new Altimeter();
   qmc5883l = new Magnetometer();
-  ens160aht21 = new Humidimeter();
-  ina219 = new Multimeter();
+
+  // ADC I²C
+  mics6814 = new GasMeter();
+  mq131 = new Ozonoscope();
 
   // Analog
   mhrd = new Rainmeter();
-  mics6814 = new GasMeter();
-  mq131 = new Ozonoscope();
-  taidacent = new UVRadiometer();
   ntc = new Thermometer();
+  taidacent = new UVRadiometer();
 }
 
 /* === Component list === */
@@ -165,21 +168,29 @@ Component* storage_array[COMPONENTS_VECTOR_SIZE] = {nullptr};
 Vector<Component*> component_list(storage_array);
 
 void pushAll(){
+  // Initial configuration
   component_list.push_back(dynamic_cast<Component*>(m8n));
-  component_list.push_back(dynamic_cast<Component*>(mhrtc2));
+  component_list.push_back(dynamic_cast<Component*>(ds3231));
+
+  // UART
+  component_list.push_back(dynamic_cast<Component*>(esp32cam));
   component_list.push_back(dynamic_cast<Component*>(pmsa003));
+
+  // I²C
+  component_list.push_back(dynamic_cast<Component*>(ens160aht21));
+  component_list.push_back(dynamic_cast<Component*>(ina219));
   component_list.push_back(dynamic_cast<Component*>(mpu9250));
   component_list.push_back(dynamic_cast<Component*>(ms5611));
-  component_list.push_back(dynamic_cast<Component*>(ina219));
   component_list.push_back(dynamic_cast<Component*>(qmc5883l));
-  component_list.push_back(dynamic_cast<Component*>(ens160aht21));
-  component_list.push_back(dynamic_cast<Component*>(ntc));
-  component_list.push_back(dynamic_cast<Component*>(mq131));
-  component_list.push_back(dynamic_cast<Component*>(mhrd));
+  
+  // ADC I²C
   component_list.push_back(dynamic_cast<Component*>(mics6814));
-  component_list.push_back(dynamic_cast<Component*>(taidacent));
+  component_list.push_back(dynamic_cast<Component*>(mq131));
+
+  // Analog
   component_list.push_back(dynamic_cast<Component*>(mhrd));
-  component_list.push_back(dynamic_cast<Component*>(esp32cam));
+  component_list.push_back(dynamic_cast<Component*>(ntc));  
+  component_list.push_back(dynamic_cast<Component*>(taidacent));
 }
 
 /* === Components start and calibration === */
@@ -200,12 +211,16 @@ void beginI2C(){
   }
 #endif
 
-void beginAll(){
-  beginI2C();
-  newAll();
+void calibrateMQ131(){
   ens160aht21->gatherData();
   ntc->gatherData();
   mq131->setClimateParameters(ntc->getTemperature(), ens160aht21->getHumidity());
+}
+
+void beginAll(){
+  beginI2C();
+  newAll();
+  calibrateMQ131();
   #if defined(ESP32) || defined(ESP8266)// For ESP
     beginWiFi();
   #endif
@@ -213,9 +228,9 @@ void beginAll(){
 
 /* === Gather components data === */
 void gatherDataAll(){
+  calibrateMQ131();
   for(auto element : component_list)
     element->gatherData();
-  mq131->setClimateParameters(ntc->getTemperature(), ens160aht21->getHumidity());
 }
 
 /* === Display gathered data === */

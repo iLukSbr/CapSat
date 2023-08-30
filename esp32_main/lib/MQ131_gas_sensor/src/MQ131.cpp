@@ -161,24 +161,17 @@ void MQ131Class::begin(uint8_t _pinPower, ADS1115_MUX _pinSensor, MQ131Model _mo
  float MQ131Class::readRs() {
  	// Read the value
   adc->setCompareChannels(pinSensor);
- 	uint16_t valueSensor = map((long)round(adc->getResult_mV()), 0, maxVoltage, 0, 1023);
- 	  // Compute the voltage on load resistance (for 5V Arduino)
-  // #ifdef ESP32
-  //   float vRL = ((float)valueSensor) / 4095.0 * 3.3;
- 	//   // Compute the resistance of the sensor (for 5V Arduino)
-  //   if(!vRL) return 0.0f; //division by zero prevention
- 	//     float rS = (3.3 / vRL - 1.0) * valueRL;
-  // #elif defined(ESP8266)
-  //   float vRL = ((float)valueSensor) / 1023.0 * 3.3;
- 	//   // Compute the resistance of the sensor (for 5V Arduino)
-  //   if(!vRL) return 0.0f; //division by zero prevention
- 	//     float rS = (3.3 / vRL - 1.0) * valueRL;
-  // #else
-    float vRL = ((float)valueSensor) / 1023.0 * 5.0;
+ 	// Compute the voltage on load resistance (for 5V Arduino)
+  float vRL = adc->getResult_V();
+  #ifdef ESP32
+ 	  // Compute the resistance of the sensor (for 3.3V ESP32)
+    if(!vRL) return 0.0f; //division by zero prevention
+ 	    float rS = (3.3 / vRL - 1.0) * valueRL;
+  #else
  	  // Compute the resistance of the sensor (for 5V Arduino)
     if(!vRL) return 0.0f; //division by zero prevention
  	    float rS = (5.0 / vRL - 1.0) * valueRL;
-  // #endif
+  #endif
  	return rS;
  }
 

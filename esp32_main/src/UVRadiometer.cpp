@@ -28,7 +28,7 @@ SOFTWARE.
 UVRadiometer::UVRadiometer():
     uv_radiometer_data(0)
 {// Create object
-
+    pinMode(UV_RADIOMETER_PIN, INPUT);
 }
 
 UVRadiometer::~UVRadiometer(){// Release memory

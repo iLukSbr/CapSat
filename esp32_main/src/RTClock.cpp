@@ -59,7 +59,7 @@ void RTClock::printData(){// Display data for test
 void RTClock::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries
     if(!isHTTP){
         doc[F(DATE_TIME_KEY)] = clock_data;
-        doc[F(DAY_OF_THE_WEEK_KEY)] = day_of_the_week;
+        payload[F(DAY_OF_THE_WEEK_KEY)] = day_of_the_week;
     }
 }
 

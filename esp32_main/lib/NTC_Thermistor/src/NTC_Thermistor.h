@@ -46,7 +46,7 @@ class NTC_Thermistor : public Thermistor {
 
   private:
     // Default analog resolution
-    #if defined(ESP32) || defined(ESP8266)
+    #ifdef ESP32
       static const int DEFAULT_ADC_RESOLUTION = 4095;
     #else
       static const int DEFAULT_ADC_RESOLUTION = 1023;

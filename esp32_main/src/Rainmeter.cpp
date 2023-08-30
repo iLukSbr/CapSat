@@ -32,8 +32,7 @@ Rainmeter::Rainmeter():
 }
 
 Rainmeter::~Rainmeter(){// Release memory
-    pinMode(RAINMETER_PIN, OUTPUT);
-    digitalWrite(RAINMETER_PIN, LOW);
+
 }
 
 void Rainmeter::gatherData(){// Get data from component

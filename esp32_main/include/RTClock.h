@@ -26,7 +26,7 @@ SOFTWARE.
 
 #include "Component.h"
 
-// MH-RTC 2 DS1302 clock
+// DS3231 RTC
 // https://github.com/adafruit/RTClib
 #include <RTClib.h>
 
