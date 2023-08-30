@@ -33,7 +33,6 @@ SOFTWARE.
 // ADS1115 ADC 16 bits
 // https://github.com/wollewald/ADS1115_WE
 #include <ADS1115_WE.h>
-#include <Wire.h>
 
 /*
 VIN = 5 V
@@ -41,7 +40,6 @@ Analog output = 0 - 4.2 V (need level shifter)
 */
 
 #define ADC_I2C_ADDRESS 0x48// ADS1115 I²C address
-#define OZONOSCOPE_DATA_PIN 6// Ozonoscope analog pin
 #define OZONOSCOPE_HEATER_PIN 4// Ozonoscope heater digital pin
 #define OZONOSCOPE_CALIBRATION_CYCLE 11// Number of stable cycles to consider calibrated
 #define OZONOSCOPE_RL 1000000// 1M heater resistor (Ohm)

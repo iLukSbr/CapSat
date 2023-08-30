@@ -196,6 +196,7 @@ void beginI2C(){
       delay(CALIBRATION_DELAY);
       Serial.println(F("Waiting for WiFi connection..."));
     }
+    WiFi.setAutoReconnect(true);
   }
 #endif
 

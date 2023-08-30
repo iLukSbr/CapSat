@@ -30,13 +30,11 @@ SOFTWARE.
 Ozonoscope::Ozonoscope():
     adc(new ADS1115_WE(ADC_I2C_ADDRESS))
 {// Create object
-  MQ131.begin(OZONOSCOPE_HEATER_PIN, OZONOSCOPE_DATA_PIN, LOW_CONCENTRATION, OZONOSCOPE_RL, OZONOSCOPE_CALIBRATION_CYCLE); 
+  MQ131.begin(OZONOSCOPE_HEATER_PIN, ADS1115_COMP_0_GND, LOW_CONCENTRATION, OZONOSCOPE_RL, OZONOSCOPE_CALIBRATION_CYCLE, adc); 
   Serial.println(F("Calibrating ozonoscope..."));
   MQ131.calibrate();// Calibrate
   while(!adc->init())
     Serial.println(F("Waiting for ADC..."));
-  adc->setMeasureMode(ADS1115_CONTINUOUS);
-  adc->setVoltageRange_mV(ADS1115_RANGE_4096);
 }
 
 Ozonoscope::~Ozonoscope(){// Release memory

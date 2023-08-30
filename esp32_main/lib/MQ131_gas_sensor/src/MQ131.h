@@ -33,6 +33,10 @@
 
 #include <Arduino.h>
 
+// ADS1115 ADC 16 bits
+// https://github.com/wollewald/ADS1115_WE
+#include <ADS1115_WE.h>
+
 // Default values
 #define MQ131_DEFAULT_RL                            1000000           // Default load resistance of 1MOhms
 #define MQ131_DEFAULT_TEMPERATURE_CELSIUS           20                // Default temperature to correct environmental drift
@@ -52,7 +56,7 @@ class MQ131Class {
     virtual ~MQ131Class();
   
 		// Initialize the driver
-		void begin(uint8_t _pinPower, uint8_t _pinSensor, MQ131Model _model, uint32_t _RL, uint8_t MQ131_DEFAULT_STABLE_CYCLE, Stream* _debugStream = NULL);
+		void begin(uint8_t _pinPower, ADS1115_MUX _pinSensor, MQ131Model _model, uint32_t _RL, uint8_t MQ131_DEFAULT_STABLE_CYCLE, ADS1115_WE* _adc, Stream* _debugStream = NULL);
 
 		// Manage a full cycle with delay() without giving the hand back to
 		// the main loop (delay() function included)
@@ -87,6 +91,7 @@ class MQ131Class {
 		void calibrate();
 
 	private:
+		ADS1115_WE* adc;
 
     		// Internal helpers
 		// Internal function to manage the heater
@@ -113,7 +118,7 @@ class MQ131Class {
 
 		// Details about the circuit: pins and load resistance value
 		uint8_t pinPower = -1;
-		uint8_t pinSensor = -1;
+		ADS1115_MUX pinSensor = ADS1115_COMP_0_GND;
 		uint32_t valueRL = -1;
 
 		// Timer to keep track of the pre-heating
@@ -130,6 +135,8 @@ class MQ131Class {
 		// Parameters for environment
 		int8_t temperatureCelsuis = MQ131_DEFAULT_TEMPERATURE_CELSIUS;
 		uint8_t humidityPercent = MQ131_DEFAULT_HUMIDITY_PERCENT;
+
+		uint16_t maxVoltage = 3300;// mV
 };
 
 extern MQ131Class MQ131;

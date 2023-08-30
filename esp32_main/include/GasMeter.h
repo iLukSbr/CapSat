@@ -33,12 +33,8 @@ SOFTWARE.
 // ADS1115 ADC 16 bits
 // https://github.com/wollewald/ADS1115_WE
 #include <ADS1115_WE.h>
-#include <Wire.h>
 
 #define ADC_I2C_ADDRESS 0x48// ADS1115 I²C address
-#define GAS_METER_CO_PIN 1// Gas meter analog CO pin
-#define GAS_METER_NO2_PIN 2// Gas meter analog NO2 pin
-#define GAS_METER_NH3_PIN 3// Gas meter analog NH3 pin
 #define GAS_METER_SIZE 8// Sensor data quantity
 #define GAS_DECIMAL_PLACES 4// Decimal places for gas concentration
 #define GAS_METER_KEY "gasometro"// JSON gas meter key
@@ -53,9 +49,9 @@ SOFTWARE.
 
 class GasMeter : public Component{
   private:
+    ADS1115_WE* adc;
     MICS6814* gas;
     float gas_meter_data[GAS_METER_SIZE] = {0.f};
-    ADS1115_WE* adc;
     
   public:
     GasMeter();// Create object

@@ -97,6 +97,7 @@ void beginWiFi(){
     delay(CALIBRATION_DELAY);
     Serial.println(F("Waiting for WiFi connection..."));
   }
+  WiFi.setAutoReconnect(true);
 }
 
 void setup(){
@@ -158,9 +159,11 @@ void loop(){
   //     uart_code_received = camSerial->read();
   // }
   if(millis() - stopwatch >= DEFAULT_PICTURE_DELAY){
+    while(ov5640->getFWStatus() != FW_STATUS_S_FOCUSED)
+      Serial.println(F("Focusing..."));
     camera_fb_t* fb = esp_camera_fb_get();// Take a picture with camera
     while(!fb)
-      Serial.println(F("Waiting, camera is trying to take a picture..."));
+      Serial.println(F("Taking a picture..."));
     esp_camera_fb_return(fb);
     EEPROM.begin(EEPROM_SIZE);// initialize EEPROM with predefined size
     picture_number = EEPROM.read(0) + 1;
@@ -168,7 +171,7 @@ void loop(){
     fs::FS &fs = SD_MMC;
     File file = fs.open(path.c_str(), FILE_WRITE);
     while(!file){
-      Serial.println(F("Opening picture file..."));
+      Serial.println(F("Saving photo..."));
       delay(CALIBRATION_DELAY);
       file = fs.open(path.c_str(), FILE_WRITE);
     }

@@ -46,19 +46,31 @@ MQ131Class::~MQ131Class() {
 /**
  * Init core variables
  */
- void MQ131Class::begin(uint8_t _pinPower, uint8_t _pinSensor, MQ131Model _model, uint32_t _RL, uint8_t _MQ131_DEFAULT_STABLE_CYCLE, Stream* _debugStream) { 
+void MQ131Class::begin(uint8_t _pinPower, ADS1115_MUX _pinSensor, MQ131Model _model, uint32_t _RL, uint8_t _MQ131_DEFAULT_STABLE_CYCLE,  ADS1115_WE* _adc, Stream* _debugStream){
   // Define if debug is requested
-  MQ131_DEFAULT_STABLE_CYCLE = _MQ131_DEFAULT_STABLE_CYCLE;
   enableDebug = _debugStream != NULL;
   debugStream = _debugStream;
-  
- 	// Setup the model
- 	model = _model;
 
- 	// Store the circuit info (pin and load resistance)
+  adc = _adc;
+  MQ131_DEFAULT_STABLE_CYCLE = _MQ131_DEFAULT_STABLE_CYCLE;
+
+// Setup the model
+  model = _model;
+
+// Store the circuit info (pin and load resistance)
  	pinPower = _pinPower;
  	pinSensor = _pinSensor;
  	valueRL = _RL;
+
+  while(!adc->init())
+      Serial.println(F("Waiting for ADC..."));
+  adc->setMeasureMode(ADS1115_CONTINUOUS);
+  #if defined(ESP32) || defined(ESP8266)
+    adc->setVoltageRange_mV(ADS1115_RANGE_4096);
+  #else
+    maxVoltage = 5000;
+    adc->setVoltageRange_mV(ADS1115_RANGE_6144);
+  #endif
 
   // Setup default calibration value
   switch(model) {
@@ -79,7 +91,6 @@ MQ131Class::~MQ131Class() {
 
  	// Setup pin mode
  	pinMode(pinPower, OUTPUT);
- 	pinMode(pinSensor, INPUT);
 
   // Switch off the heater as default status
   digitalWrite(pinPower, LOW);
@@ -149,24 +160,25 @@ MQ131Class::~MQ131Class() {
  */
  float MQ131Class::readRs() {
  	// Read the value
- 	uint16_t valueSensor = analogRead(pinSensor);
+  adc->setCompareChannels(pinSensor);
+ 	uint16_t valueSensor = map((long)round(adc->getResult_mV()), 0, maxVoltage, 0, 1023);
  	  // Compute the voltage on load resistance (for 5V Arduino)
-  #ifdef ESP32
-    float vRL = ((float)valueSensor) / 4095.0 * 3.3;
- 	  // Compute the resistance of the sensor (for 5V Arduino)
-    if(!vRL) return 0.0f; //division by zero prevention
- 	    float rS = (3.3 / vRL - 1.0) * valueRL;
-  #elif defined(ESP8266)
-    float vRL = ((float)valueSensor) / 1024.0 * 3.3;
- 	  // Compute the resistance of the sensor (for 5V Arduino)
-    if(!vRL) return 0.0f; //division by zero prevention
- 	    float rS = (3.3 / vRL - 1.0) * valueRL;
-  #else
-    float vRL = ((float)valueSensor) / 1024.0 * 5.0;
+  // #ifdef ESP32
+  //   float vRL = ((float)valueSensor) / 4095.0 * 3.3;
+ 	//   // Compute the resistance of the sensor (for 5V Arduino)
+  //   if(!vRL) return 0.0f; //division by zero prevention
+ 	//     float rS = (3.3 / vRL - 1.0) * valueRL;
+  // #elif defined(ESP8266)
+  //   float vRL = ((float)valueSensor) / 1023.0 * 3.3;
+ 	//   // Compute the resistance of the sensor (for 5V Arduino)
+  //   if(!vRL) return 0.0f; //division by zero prevention
+ 	//     float rS = (3.3 / vRL - 1.0) * valueRL;
+  // #else
+    float vRL = ((float)valueSensor) / 1023.0 * 5.0;
  	  // Compute the resistance of the sensor (for 5V Arduino)
     if(!vRL) return 0.0f; //division by zero prevention
  	    float rS = (5.0 / vRL - 1.0) * valueRL;
-  #endif
+  // #endif
  	return rS;
  }
 

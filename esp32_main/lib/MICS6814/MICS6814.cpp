@@ -1,9 +1,20 @@
 #include "MICS6814.h"
 
-MICS6814::MICS6814(int pinCO, int pinNO2, int pinNH3){
-	_pinCO = pinCO;
-	_pinNO2 = pinNO2;
-	_pinNH3 = pinNH3;
+MICS6814::MICS6814(ADS1115_MUX pinCO, ADS1115_MUX pinNO2, ADS1115_MUX pinNH3, ADS1115_WE* _adc):
+	_pinCO(pinCO),
+	_pinNO2(pinNO2),
+	_pinNH3(pinNH3),
+	adc(_adc)
+{
+    while(!adc->init())
+        Serial.println(F("Waiting for ADC..."));
+    adc->setMeasureMode(ADS1115_CONTINUOUS);
+	#if defined(ESP32) || defined(ESP8266)
+		adc->setVoltageRange_mV(ADS1115_RANGE_4096);
+	#else
+		maxVoltage = 5000;
+		adc->setVoltageRange_mV(ADS1115_RANGE_6144);
+	#endif
 }
 
 /*Calibrates MICS-6814 before use
@@ -63,21 +74,24 @@ void MICS6814::calibrate(){
 		delay(50);
 		for (int i=0; i<3; i++){
 			delay(1);
-			rs += analogRead(_pinNH3);
+			adc->setCompareChannels(_pinNH3);
+			rs += map((long)round(adc->getResult_mV()), 0, maxVoltage, 0, 1023);
 		}
 		curNH3 = rs/3;
 		rs = 0;
 		delay(50);
 		for (int i=0; i<3; i++){
 			delay(1);
-			rs += analogRead(_pinCO);
+			adc->setCompareChannels(_pinCO);
+			rs += map((long)round(adc->getResult_mV()), 0, maxVoltage, 0, 1023);
 		}
 		curCO = rs/3;
 		rs = 0;
 		delay(50);
 		for (int i=0; i<3; i++){
 			delay(1);
-			rs += analogRead(_pinNO2);
+			adc->setCompareChannels(_pinNO2);
+			rs += map((long)round(adc->getResult_mV()), 0, maxVoltage, 0, 1023);
 		}
 		curNO2 = rs/3;
 
@@ -171,21 +185,24 @@ uint16_t MICS6814::getResistance(channel_t channel) const{
 	switch (channel){
 		case CH_CO:
 			for (int i=0; i<100; i++){
-				rs += analogRead(_pinCO);
+				adc->setCompareChannels(_pinCO);
+				rs += map((long)round(adc->getResult_mV()), 0, maxVoltage, 0, 1023);
 				counter++;
 				delay(2);
 			}
 			break;
 		case CH_NO2:
 			for (int i=0; i<100; i++){
-				rs += analogRead(_pinNO2);
+				adc->setCompareChannels(_pinNO2);
+				rs += map((long)round(adc->getResult_mV()), 0, maxVoltage, 0, 1023);
 				counter++;
 				delay(2);
 			}
 			break;
 		case CH_NH3:
 			for (int i=0; i<100; i++){
-				rs += analogRead(_pinNH3);
+				adc->setCompareChannels(_pinNO2);
+				rs += map((long)round(adc->getResult_mV()), 0, maxVoltage, 0, 1023);
 				counter++;
 				delay(2);
 			}
