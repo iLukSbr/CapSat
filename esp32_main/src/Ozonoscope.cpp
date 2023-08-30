@@ -38,7 +38,7 @@ Ozonoscope::Ozonoscope():
 }
 
 Ozonoscope::~Ozonoscope(){// Release memory
-
+    delete adc;
 }
 
 void Ozonoscope::gatherData(){// Get data from component

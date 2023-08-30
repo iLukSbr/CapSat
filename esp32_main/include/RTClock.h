@@ -27,21 +27,25 @@ SOFTWARE.
 #include "Component.h"
 
 // MH-RTC 2 DS1302 clock
-// https://github.com/Makuna/Rtc
-#include <ThreeWire.h>
-#include <RtcDS1302.h>
+// https://github.com/adafruit/RTClib
+#include <RTClib.h>
 
-#define RTCLOCK_DAT_PIN 1// RTC I/O data pin
-#define RTCLOCK_CLK_PIN 2// RTC clock pin
-#define RTCLOCK_RST_PIN 3// RTC CE reset pin
 #define RTCLOCK_SIZE 21// Date and time string length
 #define DATE_TIME_KEY "id"// JSON date and time key
+#define DAY_OF_THE_WEEK_KEY "dia da semana"// JSON day of the week key
+#define PT_BR// Português brasileiro
+// #define EN_US// Inglês
 
 class RTClock : public Component{
   private:
-    ThreeWire* myWire;
-    RtcDS1302<ThreeWire>* Rtc;
+    RTC_DS3231 *rtc;
     char clock_data[RTCLOCK_SIZE] = {0};
+    char *day_of_the_week;
+    #ifdef EN_US
+      char days[7][14] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+    #else
+      char days[7][14] = {"Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"};
+    #endif
     
   public:
     RTClock(const uint16_t& year, const uint8_t month, const uint8_t day, const uint8_t hour, const uint8_t minute, const uint8_t second);// Create object

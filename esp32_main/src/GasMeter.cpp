@@ -34,6 +34,7 @@ GasMeter::GasMeter():
 
 GasMeter::~GasMeter(){// Release memory
     delete gas;
+    delete adc;
 }
 
 void GasMeter::gatherData(){// Get data from component

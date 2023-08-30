@@ -26,31 +26,28 @@ SOFTWARE.
 #include "RTClock.h"
 
 RTClock::RTClock(const uint16_t& year, const uint8_t month, const uint8_t day, const uint8_t hour, const uint8_t minute, const uint8_t second):
-    myWire(new ThreeWire(RTCLOCK_DAT_PIN, RTCLOCK_CLK_PIN, RTCLOCK_RST_PIN)),// Instatiate pins
-    Rtc(new RtcDS1302<ThreeWire>(*myWire))// Instatiate RTC
+    rtc(new RTC_DS3231()),// Instatiate RTC
+    day_of_the_week(nullptr)
 {// Create object
-    if(Rtc->GetIsWriteProtected())// If RTC is read only
-        Rtc->SetIsWriteProtected(false);// Enable RTC write
-    if(!Rtc->GetIsRunning())// If RTC is off
-        Rtc->SetIsRunning(true);// Start RTC
-    Rtc->SetDateTime(RtcDateTime(year, month, day, hour, minute, second));// Update date and time
-    Rtc->SetIsWriteProtected(true);// Disable RTC write
+    while(!rtc->begin())
+        Serial.println(F("Waiting for RTC..."));
+    rtc->adjust(DateTime(year, month, day, hour, minute, second));
 }
 RTClock::~RTClock(){// Release memory
-    delete myWire;
-    delete Rtc;
+    delete rtc;
 }
 void RTClock::gatherData(){// Get data from component
-    RtcDateTime datetime = Rtc->GetDateTime();// Get real time
+    DateTime now = rtc->now();// Get real time
+    day_of_the_week = days[now.dayOfTheWeek()];
     snprintf_P(clock_data,
                21,
                PSTR("%02u-%02u-%04u_%02u-%02u-%02u"),// Date-hour format
-               datetime.Day(),// Day
-               datetime.Month(),// Month
-               datetime.Year(),// Year
-               datetime.Hour(),// Hour
-               datetime.Minute(),// Minutes
-               datetime.Second());// Seconds
+               now.day(),// Day
+               now.month(),// Month
+               now.year(),// Year
+               now.hour(),// Hour
+               now.minute(),// Minutes
+               now.second());// Seconds
 }
 
 void RTClock::printData(){// Display data for test
@@ -60,8 +57,10 @@ void RTClock::printData(){// Display data for test
 }
 
 void RTClock::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries
-    if(!isHTTP)
+    if(!isHTTP){
         doc[F(DATE_TIME_KEY)] = clock_data;
+        doc[F(DAY_OF_THE_WEEK_KEY)] = day_of_the_week;
+    }
 }
 
 void RTClock::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
