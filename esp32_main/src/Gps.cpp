@@ -33,9 +33,9 @@ Gps::Gps():
       gpsSerial(new SoftwareSerial(GPS_RX_PIN, GPS_TX_PIN)) 
     #endif
 {// Create object
-    multiPrintln(F("Starting GPSr..."));
+    multiPrintln(F("Starting GPS..."));
     gpsSerial->begin(SERIAL_BAUD_RATE);// Serial baud rate
-    gatherDateTime();
+    gatherDateTime(true);
     multiPrintln(F("GPS OK!"));
 }
 
@@ -131,13 +131,13 @@ const uint8_t Gps::getSecond() const{
     return second();
 }
 
-void Gps::gatherDateTime(){// Get date and time
+void Gps::gatherDateTime(const bool search){// Get date and time, keep searching signal if true
     do{
         gatherData();
         delay(CALIBRATION_DELAY);
         multiPrintln(F("Searching for GPS signal..."));
-    }while((!gps->date.isValid() || !gps->time.isValid()) || gps->date.year()>ACTUAL_YEAR);// Colecting date and time
-    setTime(gps->time.hour(), gps->time.minute(), gps->time.second(), gps->date.day(), gps->date.month(), gps->date.year());
+    }while(search && ((!gps->date.isValid() || !gps->time.isValid()) || gps->date.year()>ACTUAL_YEAR));// Colecting date and time
+    setTime(gps->time.hour(), gps->time.minute(), gps->time.second() + UTC_GPS_TIME_DRIFT, gps->date.day(), gps->date.month(), gps->date.year());
     adjustTime(UTC_OFFSET*SECS_PER_HOUR);
     delay(CALIBRATION_DELAY);
 }

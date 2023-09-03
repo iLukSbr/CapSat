@@ -30,7 +30,7 @@ SOFTWARE.
     #include <WebSerial.h>
 #endif
 
-#define MSG_DELAY 10
+#define MSG_DELAY 100
 
 class Message{// Print to Serial and WebSerial
     public:

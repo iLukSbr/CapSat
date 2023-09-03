@@ -45,6 +45,7 @@ SOFTWARE.
 
 #define ACTUAL_YEAR 2023// Date year validation
 #define UTC_OFFSET -3// UTC time zone
+#define UTC_GPS_TIME_DRIFT 19// GPS time delayed behind UTC (s)
 #define GPS_SIZE 6// Sensor data quantity
 #define GPS_DECIMAL_PLACES 6// Decimal places for GPS coordinates
 #define GPS_MIN_CHARS_PROCESSED 6// Minimum GPS data received to be considered lost information
@@ -83,5 +84,5 @@ class Gps : public Component{
     const uint8_t getHour() const;// Hour
     const uint8_t getMinute() const;// Minute
     const uint8_t getSecond() const;// Second
-    void gatherDateTime();// Get date and time
+    void gatherDateTime(const bool search);// Get date and time
 };

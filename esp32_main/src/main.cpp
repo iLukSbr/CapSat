@@ -206,10 +206,13 @@ void pushAll(){
       Serial.println(F("Waiting for WiFi connection..."));
     }
     WiFi.setAutoReconnect(true);
+    delay(CALIBRATION_DELAY);
     WebSerial.begin(&server);
+    delay(CALIBRATION_DELAY);
     server.begin();
-    msg.multiPrintln(WiFi.localIP().toString());
+    Serial.println(WiFi.localIP());
     msg.multiPrintln(F("WiFi OK!"));
+    delay(CALIBRATION_DELAY);
   }
 #endif
 
@@ -231,7 +234,7 @@ void beginAll(){
 void gatherDataAll(){
   calibrateMQ131();
   if(!ds3231->checkValidDate(m8n->getMinute())){// If date and time shifted
-    m8n->gatherDateTime();
+    m8n->gatherDateTime(false);
     ds3231->rtcAdjust(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond());
   }
   for(auto element : component_list)
