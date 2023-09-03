@@ -57,7 +57,18 @@ SOFTWARE.
 
   // WiFi connection
   #include <WiFi.h>
+
+  // Serial web server
+  // https://github.com/me-no-dev/AsyncTCP
+  // https://github.com/ayushsharma82/WebSerial
+  // https://github.com/me-no-dev/ESPAsyncWebServer
+  #include <AsyncTCP.h>
+  #include <ESPAsyncWebServer.h>
+  #include <WebSerial.h>
 #endif
+
+// Messages
+#include "Message.h"
 
 /* === UART Interface === */
 // ESP32-CAM
@@ -107,14 +118,14 @@ SOFTWARE.
 
 /* === Constant values === */
 #define TEAM_ID 99// Team ID number
-#define HTTP_SENDING_DELAY 4000// HTTP sending delay (ms)
+#define HTTP_SENDING_DELAY 240000// HTTP sending delay (ms)
 #define COMPONENTS_VECTOR_SIZE 14// Components quantity inside vector
-#define SERIAL_BAUD_RATE 230400// Serial baud rate
-#define RELAY_PIN 12// Relay pin
+#define I2C_FREQUENCY 40000// I²C communication frequency
+#define RELAY_PIN 32// Relay pin
 
 /* === Strings === */
 #define WIFI_SSID "OBSAT"// WiFi SSID
-#define WIFI_PASSWORD "OBSAT2023"// WiFi password
+#define WIFI_PASSWORD "OBSAT"// WiFi password
 #define HTTP_WEBSITE "https://obsat.org.br/teste_post/envio.php"// HTTP POST website
 #define PAYLOAD_KEY "payload"// JSON payloade key
 #define TEAM_KEY "equipe"// JSON team key
@@ -128,49 +139,28 @@ RTClock* ds3231;
 // I²C
 Accelerometer* mpu9250;
 Altimeter* ms5611;
-// Humidimeter* ens160aht21;
-// Magnetometer* qmc5883l;
+Humidimeter* ens160aht21;
+Magnetometer* qmc5883l;
 Multimeter* ina219;
 
 // UART
-// ESP32Camera* esp32cam;
+ESP32Camera* esp32cam;
 ParticulateMeter* pmsa003;
 
 // ADC I²C
 GasMeter* mics6814;
-// Ozonoscope* mq131;
+Ozonoscope* mq131;
 
 //Analog
-// Rainmeter* mhrd;
-// Thermometer* ntc;
-// UVRadiometer* taidacent;
+Rainmeter* mhrd;
+Thermometer* ntc;
+UVRadiometer* taidacent;
 
-void newAll(){
-  // Initial configuration
-  m8n = new Gps();// UART
-  ds3231 = new RTClock(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond());// I²C
-  microsd = new MicroSDReaderWriter(ds3231->getDateTime());// SPI
+// Serial web server
+AsyncWebServer server(80);
 
-  // UART
-  pmsa003 = new ParticulateMeter();
-  // esp32cam = new ESP32Camera();
-
-  // I²C
-  // ens160aht21 = new Humidimeter();
-  ina219 = new Multimeter();
-  mpu9250 = new Accelerometer();
-  ms5611 = new Altimeter();
-  // qmc5883l = new Magnetometer();
-
-  // ADC I²C
-  mics6814 = new GasMeter();
-  // mq131 = new Ozonoscope();
-
-  // Analog
-  // mhrd = new Rainmeter();
-  // ntc = new Thermometer();
-  // taidacent = new UVRadiometer();
-}
+// Messages
+Message msg;
 
 /* === Component list === */
 Component* storage_array[COMPONENTS_VECTOR_SIZE] = {nullptr};
@@ -178,38 +168,38 @@ Vector<Component*> component_list(storage_array);
 
 void pushAll(){
   // Initial configuration
-  component_list.push_back(dynamic_cast<Component*>(m8n));
-  component_list.push_back(dynamic_cast<Component*>(ds3231));
+  component_list.push_back(dynamic_cast<Component*>(m8n = new Gps()));
+  delay(CALIBRATION_DELAY);
+  component_list.push_back(dynamic_cast<Component*>(ds3231 = new RTClock(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond())));
+  delay(CALIBRATION_DELAY);
+  microsd = new MicroSDReaderWriter(ds3231->getDateTime());// SPI
 
+  // Comment to disable device
   // UART
-  // component_list.push_back(dynamic_cast<Component*>(esp32cam));
-  component_list.push_back(dynamic_cast<Component*>(pmsa003));
+  // component_list.push_back(dynamic_cast<Component*>(esp32cam = new ESP32Camera()));
+  component_list.push_back(dynamic_cast<Component*>(pmsa003 = new ParticulateMeter()));
 
   // I²C
-  // component_list.push_back(dynamic_cast<Component*>(ens160aht21));
-  component_list.push_back(dynamic_cast<Component*>(ina219));
-  component_list.push_back(dynamic_cast<Component*>(mpu9250));
-  component_list.push_back(dynamic_cast<Component*>(ms5611));
-  // component_list.push_back(dynamic_cast<Component*>(qmc5883l));
+  // component_list.push_back(dynamic_cast<Component*>(ens160aht21 = new Humidimeter()));
+  component_list.push_back(dynamic_cast<Component*>(ina219 = new Multimeter()));
+  // component_list.push_back(dynamic_cast<Component*>(mpu9250 = new Acceletometer()));
+  // component_list.push_back(dynamic_cast<Component*>(ms5611 = new Altimeter()));
+  // component_list.push_back(dynamic_cast<Component*>(qmc5883l = new Magnetometer()));
   
   // ADC I²C
-  component_list.push_back(dynamic_cast<Component*>(mics6814));
-  // component_list.push_back(dynamic_cast<Component*>(mq131));
+  component_list.push_back(dynamic_cast<Component*>(mics6814 = new GasMeter()));
+  // component_list.push_back(dynamic_cast<Component*>(mq131 = new Ozonoscope()));
 
   // Analog
-  // component_list.push_back(dynamic_cast<Component*>(mhrd));
-  // component_list.push_back(dynamic_cast<Component*>(ntc));  
-  // component_list.push_back(dynamic_cast<Component*>(taidacent));
+  component_list.push_back(dynamic_cast<Component*>(mhrd = new Rainmeter()));
+  component_list.push_back(dynamic_cast<Component*>(ntc = new Thermometer()));
+  // component_list.push_back(dynamic_cast<Component*>(taidacent = new UVRadiometer()));
 }
 
 /* === Components start and calibration === */
-void beginI2C(){
-  Wire.begin();// I²C start
-  Wire.setClock(400000);// I²C communication frequency 400 kHz
-}
-
 #if defined(ESP32) || defined(ESP8266)// For ESP
   void beginWiFi(){
+    WiFi.mode(WIFI_STA);
     WiFi.begin(F(WIFI_SSID), F(WIFI_PASSWORD));
     WiFi.setSleep(false);
     while(WiFi.status() != WL_CONNECTED){
@@ -217,27 +207,34 @@ void beginI2C(){
       Serial.println(F("Waiting for WiFi connection..."));
     }
     WiFi.setAutoReconnect(true);
+    WebSerial.begin(&server);
+    server.begin();
+    msg.multiPrintln(WiFi.localIP().toString());
+    msg.multiPrintln(F("WiFi OK!"));
   }
 #endif
 
-// void calibrateMQ131(){
+void calibrateMQ131(){
 //   ens160aht21->gatherData();
-//   ntc->gatherData();
+  ntc->gatherData();
 //   mq131->setClimateParameters(ntc->getTemperature(), ens160aht21->getHumidity());
-// }
+}
 
 void beginAll(){
-  beginI2C();
-  newAll();
-  // calibrateMQ131();
   #if defined(ESP32) || defined(ESP8266)// For ESP
     beginWiFi();
   #endif
+  Wire.begin();
+  pushAll();
 }
 
 /* === Gather components data === */
 void gatherDataAll(){
-  // calibrateMQ131();
+  calibrateMQ131();
+  if(!ds3231->checkValidDate(m8n->getMinute())){// If date and time shifted
+    m8n->gatherDateTime();
+    ds3231->rtcAdjust(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond());
+  }
   for(auto element : component_list)
     element->gatherData();
 }
@@ -246,7 +243,7 @@ void gatherDataAll(){
 void printAll(){
   for(auto element : component_list)
     element->printData();
-  Serial.println();
+  msg.multiPrintln();
 }
 
 /* === Save gathered data === */
@@ -254,6 +251,13 @@ String makeJSONAll(const bool& isHTTP){
   StaticJsonDocument<1000> doc;
   JsonObject payload = doc.createNestedObject(F(PAYLOAD_KEY));
   doc[F(TEAM_KEY)] = TEAM_ID;
+  doc["giroscopio"][0] = 1;
+  doc["giroscopio"][1] = 2;
+  doc["giroscopio"][2] = 3;
+  doc["acelerometro"][0] = 4;
+  doc["acelerometro"][1] = 5;
+  doc["acelerometro"][2] = 6;
+  doc["pressao"] = 7;
   for(auto element : component_list)
     element->makeJSON(isHTTP, doc, payload);
   String doc_serialized;
@@ -278,24 +282,29 @@ void saveJSONToFileAll(const String& doc_serialized){
     my_file->println();// Descend one line
     my_file->close();// Close file
   }
+  msg.multiPrint(F("JSON saved: "));
+  msg.multiPrintln(doc_serialized);
 }
 
 /* === Send JSON data to server by HTTP POST === */
 #if defined(ESP32) || defined(ESP8266)// For ESP
-  void sendJSONToServerAll(String doc_serialized){
+  void sendJSONToServerAll(const String& doc_serialized){
     HTTPClient http;
     http.begin(F(HTTP_WEBSITE));
     http.addHeader(F("Content-Type"), F("application/json"));
     uint8_t httpResponseCode = http.POST(doc_serialized);
     if(httpResponseCode > 0){
-      Serial.print(F("HTTP POST sending success: "));
-      Serial.println(httpResponseCode);
-      Serial.println(http.getString());
+      msg.multiPrint(F("HTTP POST sending success, code: "));
+      msg.multiPrintln(httpResponseCode);
+      msg.multiPrint(F("Received: "));
+      msg.multiPrintln(http.getString());
     }
     else{
-      Serial.print(F("Error occurred while sending HTTP POST: "));
-      Serial.println(http.errorToString(httpResponseCode));
+      msg.multiPrint(F("Error occurred while sending HTTP POST: "));
+      msg.multiPrintln(http.errorToString(httpResponseCode));
     }
+    msg.multiPrint(F("JSON sent: "));
+    msg.multiPrintln(doc_serialized);
   }
 
   unsigned long stopwatch = 0;// Stopwatch for timed data sending
@@ -303,6 +312,7 @@ void saveJSONToFileAll(const String& doc_serialized){
 
 // void powerOnComponents(){
 //   digitalWrite(RELAY_PIN, HIGH);
+//   msg.multiPrintln(F("Relay OK!"));
 // }
 
 // void powerOffComponents(){
@@ -334,9 +344,12 @@ void loop(){
     saveCSVToFileAll();
   #endif
   printAll();
+  msg.multiPrint("Elapsed time: ");
+  msg.multiPrintln(millis());
   #if defined(ESP32) || defined(ESP8266)// For ESP
-    unsigned long elapsed_time = millis();
-    if(elapsed_time - stopwatch >= HTTP_SENDING_DELAY || stopwatch <= HTTP_SENDING_DELAY){
+    msg.multiPrint("Last JSON sent: ");
+    msg.multiPrintln(stopwatch);
+    if(millis() - stopwatch >= HTTP_SENDING_DELAY || !stopwatch){
       sendJSONToServerAll(makeJSONAll(true));
       stopwatch = millis();
     }

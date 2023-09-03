@@ -29,9 +29,10 @@ Humidimeter::Humidimeter():
     aht21(new AHTxx(AHTXX_ADDRESS_X38, AHT2x_SENSOR)),// Instantiate humidity/temperature sensor
     ens160(new DFRobot_ENS160_I2C(&Wire, 0x53))// Instantiate gas sensor I²C addres 0x53
 {// Create object
+    multiPrintln(F("Starting humidimeter..."));
     while(aht21->begin() != true){// Calibrate AHT21
         delay(CALIBRATION_DELAY);
-        Serial.println(F("Waiting for humidity sensor..."));
+        multiPrintln(F("Waiting for humidity sensor..."));
     }
     float ahtTemperature = aht21->readTemperature();// Get temperature (°C)
     if(ahtTemperature == AHTXX_ERROR)// If temperature error
@@ -41,10 +42,11 @@ Humidimeter::Humidimeter():
         humidimeter_data[0] = 0;
     while(ens160->begin() != NO_ERR){// Calibrate ENS160
         delay(CALIBRATION_DELAY);
-        Serial.println(F("Waiting for CO2 sensor..."));
+        multiPrintln(F("Waiting for CO2 sensor..."));
     }
     ens160->setPWRMode(ENS160_STANDARD_MODE);// Normal operation
     ens160->setTempAndHum(ahtTemperature, humidimeter_data[0]);// Calibrate gas sensor using temperature and humidity
+    multiPrintln(F("Humidimeter OK!"));
 }
 
 Humidimeter::~Humidimeter(){// Release memory
@@ -53,18 +55,19 @@ Humidimeter::~Humidimeter(){// Release memory
 }
 
 void Humidimeter::gatherData(){// Get data from component
+    multiPrintln(F("Gathering humidimeter data..."));
     humidimeter_data[1] = ens160->getAQI();// Air quality index
     humidimeter_data[2] = ens160->getTVOC();// Concentration of total volatile organic compounds (ppb)
     humidimeter_data[3] = ens160->getECO2();// Carbon dioxide equivalent concentration (ppm)
 }
 
 void Humidimeter::printData(){// Display data for test
-    Serial.print(F("Humidimeter: "));
+    multiPrint(F("CO2/TVOC/humidimeter: "));
     for(uint8_t i=0; i<HUMIDIMETER_SIZE; i++){
-        Serial.print(humidimeter_data[i]);
-        Serial.print(F(" "));
+        multiPrint(humidimeter_data[i]);
+        multiPrint(F(" "));
     }
-    Serial.println();
+    multiPrintln();
 }
 
 void Humidimeter::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries

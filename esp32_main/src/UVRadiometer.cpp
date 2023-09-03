@@ -28,7 +28,9 @@ SOFTWARE.
 UVRadiometer::UVRadiometer():
     uv_radiometer_data(0)
 {// Create object
+    multiPrintln(F("Starting UV radiometer..."));
     pinMode(UV_RADIOMETER_PIN, INPUT);
+    multiPrintln(F("UV radiometer OK!"));
 }
 
 UVRadiometer::~UVRadiometer(){// Release memory
@@ -36,6 +38,7 @@ UVRadiometer::~UVRadiometer(){// Release memory
 }
 
 void UVRadiometer::gatherData(){// Get data from component
+    multiPrintln(F("Gathering UV radiometer data..."));
     double converted_voltage = 1000.f*analogRead(UV_RADIOMETER_PIN)*PIN_MAX_VOLTAGE/PIN_MAX_ANALOG;// Convert analog reading into voltage value
     if(converted_voltage <= 227)// According to voltage (0-1 V)
         uv_radiometer_data = 0;// UV index 0 (low)
@@ -64,9 +67,9 @@ void UVRadiometer::gatherData(){// Get data from component
 }
 
 void UVRadiometer::printData(){// Display data for test
-    Serial.print(F("Radiometer: "));
-    Serial.print(uv_radiometer_data);
-    Serial.println();
+    multiPrint(F("UV radiometer: "));
+    multiPrint(uv_radiometer_data);
+    multiPrintln();
 }
 
 void UVRadiometer::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries

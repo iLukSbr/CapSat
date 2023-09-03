@@ -28,7 +28,9 @@ SOFTWARE.
 Rainmeter::Rainmeter():
     rainmeter_data(0)
 {// Create object
+    multiPrintln(F("Starting rainmeter..."));
     pinMode(RAINMETER_PIN, INPUT);// Defines RAINMETER_PIN as input
+    multiPrintln(F("Rainmeter OK!"));
 }
 
 Rainmeter::~Rainmeter(){// Release memory
@@ -36,13 +38,14 @@ Rainmeter::~Rainmeter(){// Release memory
 }
 
 void Rainmeter::gatherData(){// Get data from component
+    multiPrintln(F("Gathering rainmeter data..."));
     digitalRead(RAINMETER_PIN) == HIGH ? rainmeter_data=0 : rainmeter_data=1;// HIGH, 0 = dry; LOW, 1 = wet
 }
 
 void Rainmeter::printData(){// Display data for test
-    Serial.print(F("Sensor de chuva: "));
-    Serial.print(rainmeter_data);
-    Serial.println();
+    multiPrint(F("Rainmeter: "));
+    multiPrint(rainmeter_data);
+    multiPrintln();
 }
 
 void Rainmeter::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries

@@ -30,7 +30,7 @@ SOFTWARE.
 Digital output = 1 - 3 V independent from source
 */
 
-#define RAINMETER_PIN 11// Rainmeter sensor data pin
+#define RAINMETER_PIN 35// Rainmeter sensor data pin
 #define RAIN_KEY "chuva"// JSON rain key
 
 // MH-RD rain sensor

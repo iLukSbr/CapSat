@@ -28,12 +28,14 @@ SOFTWARE.
 ESP32Camera::ESP32Camera():
     esp32camera_data(false),
     #if defined(ESP32) || defined(ESP8266)// For ESP
-        camSerial(new HardwareSerial(UART_NUM_2))
+        camSerial(new HardwareSerial(UART_NUM_1))
     #else// For Arduino
         camSerial(new SoftwareSerial(ESP32CAMERA_RX_PIN, ESP32CAMERA_TX_PIN))
     #endif
 {
+    multiPrintln(F("Starting camera..."));
     camSerial->begin(SERIAL_BAUD_RATE);
+    multiPrintln(F("Camera OK!"));
 }
 
 ESP32Camera::~ESP32Camera(){
@@ -41,15 +43,16 @@ ESP32Camera::~ESP32Camera(){
 }
 
 void ESP32Camera::gatherData(){// Get data from component
+    multiPrintln(F("Gathering camera data..."));
     camSerial->println(ESP32CAMERA_REQUEST_ID);
     if(camSerial->available())// If data was received
         camSerial->read()==1 ? esp32camera_data=true : esp32camera_data=false;// True if a picture was successfully taken in the last attempt
 }
 
 void ESP32Camera::printData(){// Display data for test
-    Serial.print("ESP32-CAM: ");
-    Serial.print(esp32camera_data);
-    Serial.println();
+    multiPrint("ESP32-CAM: ");
+    multiPrint(esp32camera_data);
+    multiPrintln();
 }
 
 void ESP32Camera::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries

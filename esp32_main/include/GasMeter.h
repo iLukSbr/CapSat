@@ -36,7 +36,6 @@ SOFTWARE.
 
 #define ADC_I2C_ADDRESS 0x48// ADS1115 I²C address
 #define GAS_METER_SIZE 8// Sensor data quantity
-#define GAS_DECIMAL_PLACES 4// Decimal places for gas concentration
 #define GAS_METER_KEY "gasometro"// JSON gas meter key
 #define NH3_KEY "NH3"// JSON ammonia key
 #define CO_KEY "CO"// JSON carbon monoxide key
@@ -51,7 +50,7 @@ class GasMeter : public Component{
   private:
     ADS1115_WE* adc;
     MICS6814* gas;
-    float gas_meter_data[GAS_METER_SIZE] = {0.f};
+    float gas_meter_data[GAS_METER_SIZE] = {0};
     
   public:
     GasMeter();// Create object

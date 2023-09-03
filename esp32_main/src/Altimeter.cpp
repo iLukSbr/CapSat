@@ -28,8 +28,10 @@ SOFTWARE.
 Altimeter::Altimeter():
     baro(new MS5611())// Instantiate sensor
 {// Create object
+    multiPrintln(F("Starting altimeter..."));
     baro->begin();// Start sensor
-    baro->pressureOffset = MS5611_PRESSURE_OFFSET;// Calibrate according to local air pressure (Pa)
+    baro->setPressureOffset(MS5611_PRESSURE_OFFSET);// Calibrate according to local air pressure (Pa)
+    multiPrintln(F("Altimeter OK!"));
 }
 
 Altimeter::~Altimeter(){// Release memory
@@ -37,17 +39,18 @@ Altimeter::~Altimeter(){// Release memory
 }
 
 void Altimeter::gatherData(){// Get data from component
+    multiPrintln(F("Gathering altimeter data..."));
     altimeter_data[0] = baro->getPressure();// Air pressure (Pa)
     altimeter_data[1] = baro->getAltitude();// Altitude (m)
 }
 
 void Altimeter::printData(){// Display data for test
-    Serial.print(F("Altimeter/barometer: "));
+    multiPrint(F("Altimeter/barometer: "));
     for(uint8_t i=0; i<ALTIMETER_SIZE; i++){
-        Serial.print(altimeter_data[i]);
-        Serial.print(F(" "));
+        multiPrint(altimeter_data[i]);
+        multiPrint(F(" "));
     }
-    Serial.println();
+    multiPrintln();
 }
 
 void Altimeter::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries

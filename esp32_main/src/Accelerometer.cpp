@@ -30,15 +30,17 @@ Accelerometer::Accelerometer():
     ACCELEROMETER_KEY(F("acelerometro")),
     GYROSCOPE_KEY(F("giroscopio"))
 {// Create object
+    multiPrintln(F("Starting accelerometer..."));
     imu->Config(&Wire, bfs::Mpu6500::I2C_ADDR_PRIM);// I²C address 0x68
     while(!imu->Begin()){// Waiting for sensor communication
         delay(CALIBRATION_DELAY);
-        Serial.println(F("Waiting for accelerometer..."));
+        multiPrintln(F("Waiting for accelerometer..."));
     }
     while(!imu->ConfigSrd(ACCELEROMETER_SAMPLE_RATE_DIVIDER)){// Set the sample rate divider
-        delay(CALIBRATION_DELAY);// Calibrate moving throug an 8 pattern on a flat surface
-        Serial.println(F("Waiting for gyroscope..."));
+        delay(CALIBRATION_DELAY);// Calibrate moving through an 8 pattern on a flat surface
+        multiPrintln(F("Waiting for gyroscope..."));
     }
+    multiPrintln(F("Accelerometer OK!"));
 }
 
 Accelerometer::~Accelerometer(){
@@ -46,6 +48,7 @@ Accelerometer::~Accelerometer(){
 }
 
 void Accelerometer::gatherData(){// Get data from component
+    multiPrintln(F("Gathering accelerometer data..."));
     if(imu->Read()){// If something was received
         // Accelerometer
         accelerometer_data[0] = imu->accel_x_mps2();// X axis
@@ -60,12 +63,12 @@ void Accelerometer::gatherData(){// Get data from component
 }
 
 void Accelerometer::printData(){// Display data for test
-    Serial.print(F("Accelerometer/gyroscope: "));
+    multiPrint(F("Accelerometer/gyroscope: "));
     for(uint8_t i=0; i<ACCELEROMETER_SIZE; i++){
-        Serial.print(accelerometer_data[i]);
-        Serial.print(F(" "));
+        multiPrint(accelerometer_data[i]);
+        multiPrint(F(" "));
     }
-    Serial.println();
+    multiPrintln();
 }
 
 void Accelerometer::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries

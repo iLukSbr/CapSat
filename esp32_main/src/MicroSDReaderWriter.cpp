@@ -29,12 +29,16 @@ MicroSDReaderWriter::MicroSDReaderWriter(const char* _datafileName):
     sd(new SdFat()),// MicroSD card
     my_file(new SdFile())// File
 {// Create object
+    multiPrintln(F("Starting MicroSD..."));
     strcpy(datafileName, _datafileName);// Copy filename (date and hour)
     strcat(datafileName, FILE_EXTENSION);// Append file extension
-    while(!sd->begin(SD_CS_PIN, SPI_FULL_SPEED)){
-        Serial.println(F("Waiting for MicroSD."));
+    multiPrint(F("MicroSD filename: "));
+    multiPrintln(datafileName);
+    while(!sd->begin(SD_CS_PIN, SPI_SIXTEENTH_SPEED)){
+        multiPrintln(F("Waiting for MicroSD... Try reinserting."));
         delay(CALIBRATION_DELAY);
     }
+    multiPrintln(F("MicroSD OK!"));
 }
 
 MicroSDReaderWriter::~MicroSDReaderWriter(){// Release memory
@@ -43,10 +47,11 @@ MicroSDReaderWriter::~MicroSDReaderWriter(){// Release memory
 }
 
 SdFile* MicroSDReaderWriter::gatherData(){// Get data from component
+    multiPrintln(F("Gathering MicroSD data..."));
     if(my_file->open(datafileName, O_RDWR | O_CREAT | O_AT_END))
         return my_file;// Open file or create if not exists for read/write at the end
     else{
-        Serial.println(F("MicroSD card failed."));
+        multiPrintln(F("MicroSD card failed."));
         return nullptr;
     }
 }

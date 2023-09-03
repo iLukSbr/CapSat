@@ -27,17 +27,19 @@ SOFTWARE.
 
 ParticulateMeter::ParticulateMeter():
     #if defined(ESP32) || defined(ESP8266)// For ESP
-        pmSerial(new HardwareSerial(UART_NUM_1)),
+        pmSerial(new HardwareSerial(UART_NUM_2)),
     #else// For Arduino
         pmSerial(new SoftwareSerial(PM_RX_PIN, PM_TX_PIN)),
     #endif
     aqi(new Adafruit_PM25AQI())
 {// Create object
+    multiPrintln(F("Starting particulate meter..."));
     pmSerial->begin(SERIAL_BAUD_RATE);
     while(!aqi->begin_UART(pmSerial)){
         delay(CALIBRATION_DELAY);
-        Serial.println(F("Waiting for particulate meter..."));
+        multiPrintln(F("Waiting for particulate meter..."));
     }
+    multiPrintln(F("Particulate meter OK!"));
 }
 
 ParticulateMeter::~ParticulateMeter(){// Release memory
@@ -46,6 +48,7 @@ ParticulateMeter::~ParticulateMeter(){// Release memory
 }
 
 void ParticulateMeter::gatherData(){// Get data from component
+    multiPrintln(F("Gathering particulate meter data..."));
     PM25_AQI_Data data;
     if(aqi->read(&data)){
         // "Less than" particle concentrations at sea level pressure
@@ -69,12 +72,12 @@ void ParticulateMeter::gatherData(){// Get data from component
 }
 
 void ParticulateMeter::printData(){// Display data for test
-    Serial.print(F("Particulate meter: "));
+    multiPrint(F("Particulate meter: "));
     for(uint8_t i=0; i<PM_SIZE; i++){
-        Serial.print(particulate_meter_data[i]);
-        Serial.print(F(" "));
+        multiPrint(particulate_meter_data[i]);
+        multiPrint(F(" "));
     }
-    Serial.println();
+    multiPrintln();
 }
 
 void ParticulateMeter::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries

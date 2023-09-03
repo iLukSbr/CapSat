@@ -32,3 +32,7 @@ Component::Component(){// Create object
 Component::~Component(){// Release memory
 
 }
+
+float Component::round3(const float value){// Roud value to 3 decimal places
+    return round(1000.f*value)/1000.f;
+}

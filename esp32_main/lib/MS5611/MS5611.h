@@ -37,9 +37,10 @@ by Petr Gronat@2014
 class MS5611{
 	public:
 		MS5611();//constructor
+		void 		setPressureOffset(int16_t _pressureOffset);
 		void 		begin();
 		uint32_t 	getRawTemperature();
-		void 		getTemperature();
+		int32_t		getTemperature();
 		uint32_t 	getRawPressure();
 		int32_t 	getPressure();
 		double 		getAltitude();
@@ -47,10 +48,12 @@ class MS5611{
 		void 		getCalibration(uint16_t *);
 		void 		sendCommand(uint8_t);
 		uint32_t 	readnBytes(uint8_t);
-		int16_t		pressureOffset;
+
 	private:
 		void 		reset();
 		//variables
+		TwoWire *_wire;
+		int16_t		pressureOffset;
 		int32_t 	_PR;
 		int32_t  	_TEMP;
 		int32_t 	_dT;

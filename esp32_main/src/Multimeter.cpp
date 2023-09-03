@@ -28,14 +28,16 @@ SOFTWARE.
 Multimeter::Multimeter():
     mult(new INA219_WE(0x40))// I²C address
 {// Create object
+    multiPrintln(F("Starting multimeter..."));
     while(!mult->init()){// Calibrating
         delay(1000);
-        Serial.println(F("Aguardando o voltímetro."));
+        multiPrintln(F("Aguardando o voltímetro."));
     }
     mult->setADCMode(SAMPLE_MODE_128);// Mean value of 128 measures
     mult->setMeasureMode(CONTINUOUS);// Continuous data transmission
     mult->setPGain(PG_40);// Max shunt voltage 40 mV
     mult->setShuntSizeInOhms(SHUNT_RESISTANCE);// Shunt resistance
+    multiPrintln(F("Multimeter OK!"));
 }
 
 Multimeter::~Multimeter(){// Release memory
@@ -43,22 +45,26 @@ Multimeter::~Multimeter(){// Release memory
 }
 
 void Multimeter::gatherData(){// Get data from component
-    multimeter_data[0] = (float)map(mult->readRegister(0x02),2,610,234,1253)/100.0;// Voltage (V)
-    multimeter_data[1] = constrain((float)map((long)(multimeter_data[0]*100.0), 1000, 1680, 0, 10000)/100.0, 0.0, 100.0);// Battery percentage (%)
+    multiPrintln(F("Gathering multimeter data..."));
+    multimeter_data[0] = (float)map(mult->readRegister(0x02),2,866,2400,15740)/1000.f;// Voltage (V)
+    multiPrint("Raw voltage reading: ");
+    multiPrintln(mult->readRegister(0x02));
+    multimeter_data[1] = constrain((float)map((long)(multimeter_data[0]*100.0), 1000, 1680, 0, 100000)/1000.f, 0.f, 100.f);// Battery percentage (%)
     multimeter_data[2] = mult->getCurrent_mA();// Electric current (mA)
     multimeter_data[3] = multimeter_data[2]*multimeter_data[0];// Electric power (mW)
 }
 
 void Multimeter::printData(){// Display data for test
+    multiPrint(F("Multimeter: "));
     for(uint8_t i=0; i<2; i++){
-        Serial.print(multimeter_data[i]);
-        Serial.print(F(" "));
+        multiPrint(multimeter_data[i]);
+        multiPrint(F(" "));
     }
-    Serial.println();
+    multiPrintln();
 }
 
 void Multimeter::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries
-    doc[F(BATTERY_KEY)] = multimeter_data[1];
+    doc[F(BATTERY_KEY)] = round(multimeter_data[1]);
     if(!isHTTP){
         payload[F(VOLTAGE_KEY)] = multimeter_data[0];
         payload[F(CURRENT_KEY)] = multimeter_data[2];

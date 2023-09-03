@@ -29,8 +29,10 @@ Magnetometer::Magnetometer():
     magnetometer_data(0),
     compass(new QMC5883L())// Instantiate compass
 {// Create object
+    multiPrintln(F("Starting magnetometer..."));
     compass->init();// Calibrate moving throug an 8 pattern on a flat surface
     compass->setSamplingRate(50);// Amostras (Hz)
+    multiPrintln(F("Magnetometer OK!"));
 }
 
 Magnetometer::~Magnetometer(){// Release memory
@@ -38,13 +40,14 @@ Magnetometer::~Magnetometer(){// Release memory
 }
 
 void Magnetometer::gatherData(){// Get data from component
+    multiPrintln(F("Gathering magnetometer data..."));
     magnetometer_data = compass->readHeading();// Compass direction (°)
 }
 
 void Magnetometer::printData(){// Display data for test
-    Serial.print(F("Magnetômetro: "));
-    Serial.print(magnetometer_data);
-    Serial.println();
+    multiPrint(F("Magnetometer: "));
+    multiPrint(magnetometer_data);
+    multiPrintln();
 }
 
 void Magnetometer::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries

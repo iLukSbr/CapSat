@@ -33,12 +33,10 @@ Gps::Gps():
       gpsSerial(new SoftwareSerial(GPS_RX_PIN, GPS_TX_PIN)) 
     #endif
 {// Create object
+    multiPrintln(F("Starting GPSr..."));
     gpsSerial->begin(SERIAL_BAUD_RATE);// Serial baud rate
-    do{
-        gatherData();
-        delay(CALIBRATION_DELAY);
-        Serial.println(F("Searching for GPS signal..."));
-    }while(!gps->date.isValid() && !gps->time.isValid());// Colecting date and time
+    gatherDateTime();
+    multiPrintln(F("GPS OK!"));
 }
 
 Gps::~Gps(){// Release memory
@@ -47,6 +45,7 @@ Gps::~Gps(){// Release memory
 }
 
 void Gps::gatherData(){// Get data from component
+    multiPrintln(F("Gathering GPS data..."));
     uint16_t i = 0;
     while(gpsSerial->available() > 0){
         if(gps->encode(gpsSerial->read())){// Getting data
@@ -64,7 +63,7 @@ void Gps::gatherData(){// Get data from component
                 gps_data[5] = gps->satellites.value();// Number of GPS satellite signals acquired
         }
         if(i > 5*CALIBRATION_DELAY && gps->charsProcessed() < GPS_MIN_CHARS_PROCESSED){// If data is not valid
-            Serial.println(F("GPS signal not detected."));
+            multiPrintln(F("GPS signal not detected."));
             break;
         }
         i++;
@@ -72,17 +71,17 @@ void Gps::gatherData(){// Get data from component
 }
 
 void Gps::printData(){// Display data for test
-    Serial.print(F("GPS: "));
+    multiPrint(F("GPS: "));
     uint8_t i;
     for(i=0; i<2; i++){
-        Serial.print(gps_data[i], GPS_DECIMAL_PLACES);
-        Serial.print(F(" "));
+        multiPrint(gps_data[i], GPS_DECIMAL_PLACES);
+        multiPrint(F(" "));
     }
     for(i=2; i<GPS_SIZE; i++){
-        Serial.print(gps_data[i]);
-        Serial.print(F(" "));
+        multiPrint(gps_data[i]);
+        multiPrint(F(" "));
     }
-    Serial.println();
+    multiPrintln();
 }
 
 void Gps::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries
@@ -109,25 +108,36 @@ void Gps::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
 }
 
 const uint16_t Gps::getYear() const{
-    return gps->date.year();
+    return year();
 }
 
 const uint8_t Gps::getMonth() const{
-    return gps->date.month();
+    return month();
 }
 
 const uint8_t Gps::getDay() const{
-    return gps->date.day();
+    return day();
 }
 
 const uint8_t Gps::getHour() const{
-    return gps->time.hour();
+    return hour();
 }
 
 const uint8_t Gps::getMinute() const{
-    return gps->time.minute();
+    return minute();
 }
 
 const uint8_t Gps::getSecond() const{
-    return gps->time.second();
+    return second();
+}
+
+void Gps::gatherDateTime(){// Get date and time
+    do{
+        gatherData();
+        delay(CALIBRATION_DELAY);
+        multiPrintln(F("Searching for GPS signal..."));
+    }while((!gps->date.isValid() || !gps->time.isValid()) || gps->date.year()>ACTUAL_YEAR);// Colecting date and time
+    setTime(gps->time.hour(), gps->time.minute(), gps->time.second(), gps->date.day(), gps->date.month(), gps->date.year());
+    adjustTime(UTC_OFFSET*SECS_PER_HOUR);
+    delay(CALIBRATION_DELAY);
 }

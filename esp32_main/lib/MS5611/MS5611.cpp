@@ -7,6 +7,7 @@ by Petr Gronat@2014
 #include "MS5611.h"
 
 MS5611::MS5611():
+	_wire(&Wire),
 	pressureOffset(0),
 	_PR(0),
 	_TEMP(0),
@@ -17,7 +18,6 @@ MS5611::MS5611():
 }
 
 void MS5611::begin(){
-	Wire.begin();
 	reset();
 	delay(100);
 	readCalibration();
@@ -46,7 +46,7 @@ uint32_t MS5611::getRawPressure(){
 	return readnBytes(NBYTES_CONV);// reading the data
 }
 
-void MS5611::getTemperature(){
+int32_t MS5611::getTemperature(){
 	// Code below can be uncommented for slight speedup:
 	// NOTE: Be sure what you do! Notice that Delta 1C ~= Delta 2hPa
 	//****************
@@ -76,6 +76,7 @@ void MS5611::getTemperature(){
 		SENS2 = 0;
 	}
 	_TEMP -= T2;
+	return _TEMP;
 }
 
 uint32_t MS5611::getRawTemperature(){	
@@ -98,32 +99,32 @@ void MS5611::getCalibration(uint16_t *CA){
 }
 
 void MS5611::sendCommand(uint8_t cmd){
-	Wire.beginTransmission(ADD_MS5611);
-	Wire.write(cmd);
-	Wire.endTransmission();
+	_wire->beginTransmission(ADD_MS5611);
+	_wire->write(cmd);
+	_wire->endTransmission();
 }
 
 uint32_t MS5611::readnBytes(uint8_t nBytes){
 	if (0<nBytes && nBytes<5){	
-		Wire.beginTransmission(ADD_MS5611);
-		Wire.requestFrom((uint8_t)ADD_MS5611, nBytes);
+		_wire->beginTransmission(ADD_MS5611);
+		_wire->requestFrom((uint8_t)ADD_MS5611, nBytes);
 			uint32_t data = 0;
-			if(Wire.available()!=nBytes){
-				Wire.endTransmission();
+			if(_wire->available()!=nBytes){
+				_wire->endTransmission();
 				return 0;
 			}
 			for (int8_t k=nBytes-1; k>=0; k--)
-				data |= ( (uint32_t) Wire.read() << (8*k) );// concantenate bytes
-		Wire.endTransmission();
+				data |= ( (uint32_t) _wire->read() << (8*k) );// concantenate bytes
+		_wire->endTransmission();
 		return data;
 	}// too many bytes or
 	return 0;// no byte required
 }
 
 void MS5611::reset(){
-	Wire.beginTransmission(ADD_MS5611);
-	Wire.write(CMD_RESET);
-	Wire.endTransmission();
+	_wire->beginTransmission(ADD_MS5611);
+	_wire->write(CMD_RESET);
+	_wire->endTransmission();
 }
 
 double MS5611::getAltitude(){
@@ -132,3 +133,7 @@ double MS5611::getAltitude(){
     	return 74545.249758411 - 6337.338043467*log((double)_PR);
 	return altitude;
 }
+
+void MS5611::setPressureOffset(int16_t _pressureOffset){
+	pressureOffset = _pressureOffset;
+}		

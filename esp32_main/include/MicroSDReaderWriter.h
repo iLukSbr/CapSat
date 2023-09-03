@@ -28,6 +28,8 @@ SOFTWARE.
 // https://github.com/greiman/SdFat
 #include <SdFat.h>
 
+#include "Message.h"
+
 #define JSON_FORMAT// Save as .json
 // #define CSV_FORMAT// Save as .csv
 
@@ -39,10 +41,10 @@ SOFTWARE.
   #define FILE_EXTENSION ".txt"
 #endif
 
-#define SD_CS_PIN 10// Chip select pin for MicroSD card
+#define SD_CS_PIN 5// Chip select pin for MicroSD card
 #define DATAFILE_NAME_LENGTH 25// Datafile name characters length
 
-class MicroSDReaderWriter{
+class MicroSDReaderWriter : public Message{
   private:
     SdFat* sd;// MicroSD card
     SdFile* my_file;// File

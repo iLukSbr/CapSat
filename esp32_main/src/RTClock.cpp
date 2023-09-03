@@ -25,18 +25,21 @@ SOFTWARE.
 #include "pch.h"
 #include "RTClock.h"
 
-RTClock::RTClock(const uint16_t& year, const uint8_t month, const uint8_t day, const uint8_t hour, const uint8_t minute, const uint8_t second):
+RTClock::RTClock(const uint16_t& year, const uint8_t& month, const uint8_t& day, const uint8_t& hour, const uint8_t& minute, const uint8_t& second):
     rtc(new RTC_DS3231()),// Instatiate RTC
     day_of_the_week(nullptr)
 {// Create object
+    multiPrintln(F("Starting RTC..."));
     while(!rtc->begin())
-        Serial.println(F("Waiting for RTC..."));
-    rtc->adjust(DateTime(year, month, day, hour, minute, second));
+        multiPrintln(F("Waiting for RTC..."));
+    rtcAdjust(year, month, day, hour, minute, second);
+    multiPrintln(F("RTClock OK!"));
 }
 RTClock::~RTClock(){// Release memory
     delete rtc;
 }
 void RTClock::gatherData(){// Get data from component
+    multiPrintln(F("Gathering RTClock data..."));
     DateTime now = rtc->now();// Get real time
     day_of_the_week = days[now.dayOfTheWeek()];
     snprintf_P(clock_data,
@@ -51,9 +54,9 @@ void RTClock::gatherData(){// Get data from component
 }
 
 void RTClock::printData(){// Display data for test
-    Serial.print(F("Relógio: "));
-    Serial.print(clock_data);
-    Serial.println();
+    multiPrint(F("RTClock: "));
+    multiPrint(clock_data);
+    multiPrintln();
 }
 
 void RTClock::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries
@@ -68,6 +71,17 @@ void RTClock::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
     my_file->print(F(","));
 }
 
-const char* RTClock::getDateTime() const{// Date and time
+char* RTClock::getDateTime(){// Date and time
+    gatherData();
     return clock_data;
+}
+
+bool RTClock::checkValidDate(const uint16_t& minute){// Check if date is valid
+    if(rtc->now().day()>0 && rtc->now().minute()==minute)
+        return true;
+    return false;
+}
+
+void RTClock::rtcAdjust(const uint16_t& year, const uint8_t& month, const uint8_t& day, const uint8_t& hour, const uint8_t& minute, const uint8_t& second){
+    rtc->adjust(DateTime(year, month, day, hour, minute, second));
 }

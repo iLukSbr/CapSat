@@ -28,8 +28,10 @@ SOFTWARE.
 GasMeter::GasMeter():
     adc(new ADS1115_WE(ADC_I2C_ADDRESS))
 {// Create object
+    multiPrintln(F("Starting gas meter..."));
     gas = new MICS6814(ADS1115_COMP_1_GND, ADS1115_COMP_2_GND, ADS1115_COMP_3_GND, adc);
     gas->calibrate();
+    multiPrintln(F("Gas meter OK!"));
 }
 
 GasMeter::~GasMeter(){// Release memory
@@ -38,23 +40,27 @@ GasMeter::~GasMeter(){// Release memory
 }
 
 void GasMeter::gatherData(){// Get data from component
-    gas_meter_data[0] = gas->measure(NH3);// Ammonia concentration in air (ppm)
-    gas_meter_data[1] = gas->measure(CO);// Carbon monoxide concentration in air (ppm)
-    gas_meter_data[2] = gas->measure(NO2);// Nitrogen dioxide concentration in air (ppm)
-    gas_meter_data[3] = gas->measure(C3H8);// Propane concentration in air (ppm)
-    gas_meter_data[4] = gas->measure(C4H10);// Butane concentration in air (ppm)
-    gas_meter_data[5] = gas->measure(CH4);// Methane concentration in air (ppm)
-    gas_meter_data[6] = gas->measure(H2);// Hydrogen gas concentration in air (ppm)
-    gas_meter_data[7] = gas->measure(C2H5OH);// Ethanol concentration in air (ppm)
+    multiPrintln(F("Gathering gas meter data..."));
+    gas_meter_data[0] = 1000.f*gas->measure(NH3);// Ammonia concentration in air (ppb)
+    gas_meter_data[1] = 1000.f*gas->measure(CO);// Carbon monoxide concentration in air (ppb)
+    gas_meter_data[2] = 1000.f*gas->measure(NO2);// Nitrogen dioxide concentration in air (ppb)
+    gas_meter_data[3] = 1000.f*gas->measure(C3H8);// Propane concentration in air (ppb)
+    gas_meter_data[4] = 1000.f*gas->measure(C4H10);// Butane concentration in air (ppb)
+    gas_meter_data[5] = 1000.f*gas->measure(CH4);// Methane concentration in air (ppb)
+    gas_meter_data[6] = 1000.f*gas->measure(H2);// Hydrogen gas concentration in air (ppb)
+    gas_meter_data[7] = 1000.f*gas->measure(C2H5OH);// Ethanol concentration in air (ppb)
+    for(byte i=0; i<GAS_METER_SIZE; i++)
+        if(!gas_meter_data[i])// If invalid meter
+            gas->calibrate();
 }
 
 void GasMeter::printData(){// Display data for test
-    Serial.print(F("Gas meter: "));
+    multiPrint(F("Gas meter: "));
     for(uint8_t i=0; i<GAS_METER_SIZE; i++){
-        Serial.print(gas_meter_data[i], GAS_DECIMAL_PLACES);
-        Serial.print(F(" "));
+        multiPrint(gas_meter_data[i]);
+        multiPrint(F(" "));
     }
-    Serial.println();
+    multiPrintln();
 }
 
 void GasMeter::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries
@@ -70,7 +76,7 @@ void GasMeter::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& paylo
 
 void GasMeter::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
     for(uint8_t i=0; i<GAS_METER_SIZE; i++){
-        my_file->print(gas_meter_data[i], GAS_DECIMAL_PLACES);
+        my_file->print(gas_meter_data[i]);
         my_file->print(F(","));
     }
 }

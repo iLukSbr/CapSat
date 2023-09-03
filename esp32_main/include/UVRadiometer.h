@@ -32,7 +32,7 @@ SOFTWARE.
 Analog output = 0 - 1 V independent from source
 */
 
-#define UV_RADIOMETER_PIN 8// UV radiometer analog pin
+#define UV_RADIOMETER_PIN 39// UV radiometer analog pin
 #define UV_KEY "UV"// JSON UV level key
 
 class UVRadiometer : public Component{

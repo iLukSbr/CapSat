@@ -30,6 +30,8 @@ SOFTWARE.
 // https://github.com/adafruit/RTClib
 #include <RTClib.h>
 
+#include "Gps.h"
+
 #define RTCLOCK_SIZE 21// Date and time string length
 #define DATE_TIME_KEY "id"// JSON date and time key
 #define DAY_OF_THE_WEEK_KEY "dia da semana"// JSON day of the week key
@@ -48,11 +50,13 @@ class RTClock : public Component{
     #endif
     
   public:
-    RTClock(const uint16_t& year, const uint8_t month, const uint8_t day, const uint8_t hour, const uint8_t minute, const uint8_t second);// Create object
+    RTClock(const uint16_t& year, const uint8_t& month, const uint8_t& day, const uint8_t& hour, const uint8_t& minute, const uint8_t& second);// Create object
     ~RTClock();// Release memory
     void gatherData() override;// Get data from component
     void printData() override;// Display data for test
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
     void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
-    const char* getDateTime() const;// Date and time
+    char* getDateTime();// Date and time
+    bool checkValidDate(const uint16_t& minute);// If date is valid
+    void rtcAdjust(const uint16_t& year, const uint8_t& month, const uint8_t& day, const uint8_t& hour, const uint8_t& minute, const uint8_t& second);
 };

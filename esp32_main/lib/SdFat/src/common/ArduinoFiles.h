@@ -25,15 +25,20 @@
 #ifndef ArduinoFiles_h
 #define ArduinoFiles_h
 #include "SysCall.h"
+
+#define HAS_INCLUDE_FS_H
 //------------------------------------------------------------------------------
 /** Arduino SD.h style flag for open for read. */
-#ifndef FILE_READ
-#define FILE_READ O_RDONLY
-#endif  // FILE_READ
+#ifndef HAS_INCLUDE_FS_H
+  #ifndef FILE_READ
+    #define FILE_READ O_RDONLY
+  #endif  // FILE_READ
 /** Arduino SD.h style flag for open at EOF for read/write with create. */
-#ifndef FILE_WRITE
-#define FILE_WRITE (O_RDWR | O_CREAT | O_AT_END)
-#endif  // FILE_WRITE
+  #ifndef FILE_WRITE
+    #define FILE_WRITE (O_RDWR | O_CREAT | O_AT_END)
+  #endif  // FILE_WRITE
+#endif
+
 //------------------------------------------------------------------------------
 /**
  * \class PrintFile

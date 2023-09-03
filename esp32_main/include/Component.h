@@ -24,11 +24,13 @@ SOFTWARE.
 
 #pragma once
 
-#include <MicroSDReaderWriter.h>
 #include <ArduinoJson.h>
 
+#include "MicroSDReaderWriter.h"
+#include "Message.h"
+
 // General
-class Component{
+class Component : public Message{
   public:
     Component();// Create object
     virtual ~Component();// Release memory
@@ -36,4 +38,5 @@ class Component{
     virtual void printData() = 0;// Display data for test
     virtual void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) = 0;// Create JSON entries
     virtual void saveCSVToFile(SdFile* my_file) = 0;// Save data to MicroSD card
+    float round3(const float value);
 };

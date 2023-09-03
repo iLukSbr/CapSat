@@ -29,7 +29,8 @@ Thermometer::Thermometer():
     originThermistor(new NTC_Thermistor(NTC_SENSOR_PIN, NTC_REFERENCE_RESISTANCE, NTC_NOMINAL_RESISTANCE, NTC_NOMINAL_TEMPERATURE, NTC_B_VALUE)),
     thermistor(new SmoothThermistor(originThermistor, NTC_SMOOTHING_FACTOR))
 {// Create object
-
+    multiPrintln(F("Starting thermometer..."));
+    multiPrintln(F("Thermometer OK!"));
 }
 
 Thermometer::~Thermometer(){// Release memory
@@ -38,13 +39,14 @@ Thermometer::~Thermometer(){// Release memory
 }
 
 void Thermometer::gatherData(){// Get data from component
+    multiPrintln(F("Gathering thermometer data..."));
     thermometer_data = thermistor->readCelsius();// Analog voltage reading and conversion to temperature in Celsius degree (°)
 }
 
 void Thermometer::printData(){// Display data for test
-    Serial.print(F("Termômetro: "));
-    Serial.print(thermometer_data);
-    Serial.println();
+    multiPrint(F("Thermometer: "));
+    multiPrint(thermometer_data);
+    multiPrintln();
 }
 
 void Thermometer::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries

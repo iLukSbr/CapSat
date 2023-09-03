@@ -30,11 +30,13 @@ SOFTWARE.
 Ozonoscope::Ozonoscope():
     adc(new ADS1115_WE(ADC_I2C_ADDRESS))
 {// Create object
-  MQ131.begin(OZONOSCOPE_HEATER_PIN, ADS1115_COMP_0_GND, LOW_CONCENTRATION, OZONOSCOPE_RL, OZONOSCOPE_CALIBRATION_CYCLE, adc); 
-  Serial.println(F("Calibrating ozonoscope..."));
-  MQ131.calibrate();// Calibrate
-  while(!adc->init())
-    Serial.println(F("Waiting for ADC..."));
+    multiPrintln(F("Starting ozonoscope..."));
+    MQ131.begin(OZONOSCOPE_HEATER_PIN, ADS1115_COMP_0_GND, LOW_CONCENTRATION, OZONOSCOPE_RL, OZONOSCOPE_CALIBRATION_CYCLE, adc); 
+    multiPrintln(F("Calibrating ozonoscope..."));
+    MQ131.calibrate();// Calibrate
+    while(!adc->init())
+        multiPrintln(F("Waiting for ADC..."));
+    multiPrintln(F("Ozonoscope OK!"));
 }
 
 Ozonoscope::~Ozonoscope(){// Release memory
@@ -42,14 +44,15 @@ Ozonoscope::~Ozonoscope(){// Release memory
 }
 
 void Ozonoscope::gatherData(){// Get data from component
+    multiPrintln(F("Gathering ozonoscope data..."));
     MQ131.sample();// Get data
     ozonoscope_data = MQ131.getO3(PPB);// Ozone concentration in air (ppb)
 }
 
 void Ozonoscope::printData(){// Display data for test
-    Serial.print(F("Ozonoscope: "));
-    Serial.print(ozonoscope_data, OZONOSCOPE_DECIMAL_PLACES);
-    Serial.println();
+    multiPrint(F("Ozonoscope: "));
+    multiPrint(ozonoscope_data);
+    multiPrintln();
 }
 
 void Ozonoscope::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries
@@ -57,7 +60,7 @@ void Ozonoscope::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& pay
 }
 
 void Ozonoscope::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
-    my_file->print(ozonoscope_data, OZONOSCOPE_DECIMAL_PLACES);
+    my_file->print(ozonoscope_data);
     my_file->print(F(","));
 }
 
