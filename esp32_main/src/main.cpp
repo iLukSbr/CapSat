@@ -120,7 +120,6 @@ SOFTWARE.
 #define TEAM_ID 99// Team ID number
 #define HTTP_SENDING_DELAY 240000// HTTP sending delay (ms)
 #define COMPONENTS_VECTOR_SIZE 14// Components quantity inside vector
-#define I2C_FREQUENCY 40000// I²C communication frequency
 #define RELAY_PIN 32// Relay pin
 
 /* === Strings === */
