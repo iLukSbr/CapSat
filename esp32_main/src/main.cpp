@@ -181,8 +181,8 @@ void pushAll(){
   // I²C
   // component_list.push_back(dynamic_cast<Component*>(ens160aht21 = new Humidimeter()));
   component_list.push_back(dynamic_cast<Component*>(ina219 = new Multimeter()));
-  // component_list.push_back(dynamic_cast<Component*>(mpu9250 = new Acceletometer()));
-  // component_list.push_back(dynamic_cast<Component*>(ms5611 = new Altimeter()));
+  component_list.push_back(dynamic_cast<Component*>(mpu9250 = new Accelerometer()));
+  component_list.push_back(dynamic_cast<Component*>(ms5611 = new Altimeter()));
   // component_list.push_back(dynamic_cast<Component*>(qmc5883l = new Magnetometer()));
   
   // ADC I²C
