@@ -33,9 +33,9 @@ Altimeter::Altimeter():
         delay(CALIBRATION_DELAY);
         multiPrintln(F("Waiting for altimeter..."));
     }
-    baro->reset(1);// Correct sensor that gives pressure/2
     baro->setPressureOffset(MS5611_PRESSURE_OFFSET);// Calibrate according to local air pressure (Pa)
     baro->setOversampling(OSR_ULTRA_HIGH);// 4096 oversampling (0.012 mbar resolution)
+    baro->reset(1);// Correct sensor that gives pressure/2
     multiPrintln(F("Altimeter OK!"));
 }
 
@@ -46,7 +46,7 @@ Altimeter::~Altimeter(){// Release memory
 void Altimeter::gatherData(){// Get data from component
     multiPrintln(F("Gathering altimeter data..."));
     baro->read();
-    altimeter_data[0] = (double)baro->getPressure();// Air pressure (Pa)
+    altimeter_data[0] = (double)baro->getPressure()*100.f;// Air pressure (Pa)
     altimeter_data[1] = calcAltitude();// Altitude (m)
 }
 

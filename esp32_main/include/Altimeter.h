@@ -37,7 +37,7 @@ SOFTWARE.
 
 #define MS5611_I2C_ADDRESS 0x77// I²C address
 #define ALTIMETER_SIZE 2// Sensor data quantity
-#define MS5611_PRESSURE_OFFSET -450// Pressure offset calibration according to local air pressure (Pa)
+#define MS5611_PRESSURE_OFFSET -3.37// Pressure offset calibration according to local air pressure (Pa)
 #define PRESSURE_KEY "pressao"// JSON pressure key
 #define ALTITUDE_KEY "altitude"// JSON altitude key
 
