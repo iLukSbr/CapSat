@@ -253,13 +253,6 @@ String makeJSONAll(const bool& isHTTP){
   StaticJsonDocument<1000> doc;
   JsonObject payload = doc.createNestedObject(F(PAYLOAD_KEY));
   doc[F(TEAM_KEY)] = TEAM_ID;
-  doc["giroscopio"][0] = 1;
-  doc["giroscopio"][1] = 2;
-  doc["giroscopio"][2] = 3;
-  doc["acelerometro"][0] = 4;
-  doc["acelerometro"][1] = 5;
-  doc["acelerometro"][2] = 6;
-  doc["pressao"] = 7;
   for(auto element : component_list)
     element->makeJSON(isHTTP, doc, payload);
   String doc_serialized;

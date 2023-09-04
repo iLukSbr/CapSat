@@ -31,8 +31,11 @@ SOFTWARE.
 
 // HW-291/GY-63 MS5611-01BA03 altimeter/barometer
 // https://github.com/RobTillaart/MS5611
-#include <MS5611.h>// Address 0x77
+#include <MS5611.h>// I²C address 0x77
 
+#include <cmath>// Math functions
+
+#define MS5611_I2C_ADDRESS 0x77// I²C address
 #define ALTIMETER_SIZE 2// Sensor data quantity
 #define MS5611_PRESSURE_OFFSET -450// Pressure offset calibration according to local air pressure (Pa)
 #define PRESSURE_KEY "pressao"// JSON pressure key
@@ -41,7 +44,7 @@ SOFTWARE.
 class Altimeter : public Component{
   private:
     MS5611* baro;
-    float altimeter_data[ALTIMETER_SIZE] = {0.f};
+    double altimeter_data[ALTIMETER_SIZE] = {0.f};
     
   public:
     Altimeter();// Create object
@@ -50,4 +53,5 @@ class Altimeter : public Component{
     void printData() override;// Display data for test
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
     void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
+    double calcAltitude();// Calculates altitude (m)
 };

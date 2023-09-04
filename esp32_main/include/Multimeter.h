@@ -31,7 +31,7 @@ SOFTWARE.
 
 // INA219 multimeter
 // https://github.com/wollewald/INA219_WE
-#include <INA219_WE.h>// Address 0x40
+#include <INA219_WE.h>// I²C adress 0x40
 
 #define MULTIMETER_SIZE 3// Sensor data quantity
 #define SHUNT_RESISTANCE 0.01// Shunt resistance 10R = 0.01K

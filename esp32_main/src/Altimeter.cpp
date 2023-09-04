@@ -26,11 +26,16 @@ SOFTWARE.
 #include "Altimeter.h"
 
 Altimeter::Altimeter():
-    baro(new MS5611())// Instantiate sensor
+    baro(new MS5611(MS5611_I2C_ADDRESS))// Instantiate sensor
 {// Create object
     multiPrintln(F("Starting altimeter..."));
-    baro->begin();// Start sensor
+    while(!baro->begin()){
+        delay(CALIBRATION_DELAY);
+        multiPrintln(F("Waiting for altimeter..."));
+    }
+    baro->reset(1);// Correct sensor that gives pressure/2
     baro->setPressureOffset(MS5611_PRESSURE_OFFSET);// Calibrate according to local air pressure (Pa)
+    baro->setOversampling(OSR_ULTRA_HIGH);// 4096 oversampling (0.012 mbar resolution)
     multiPrintln(F("Altimeter OK!"));
 }
 
@@ -40,8 +45,9 @@ Altimeter::~Altimeter(){// Release memory
 
 void Altimeter::gatherData(){// Get data from component
     multiPrintln(F("Gathering altimeter data..."));
-    altimeter_data[0] = baro->getPressure();// Air pressure (Pa)
-    altimeter_data[1] = baro->getAltitude();// Altitude (m)
+    baro->read();
+    altimeter_data[0] = (double)baro->getPressure();// Air pressure (Pa)
+    altimeter_data[1] = calcAltitude();// Altitude (m)
 }
 
 void Altimeter::printData(){// Display data for test
@@ -64,4 +70,11 @@ void Altimeter::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
         my_file->print(altimeter_data[i]);
         my_file->print(F(","));
     }
+}
+
+double Altimeter::calcAltitude(){
+    double altitude = 44307.692307692 - 4943.777885853*pow(altimeter_data[0], 0.1902665);
+  	if(altitude >= 11000.f)
+    	return 74545.249758411 - 6337.338043467*log(altimeter_data[0]);
+    return altitude;
 }

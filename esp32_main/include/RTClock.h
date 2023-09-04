@@ -28,7 +28,7 @@ SOFTWARE.
 
 // DS3231 RTC
 // https://github.com/adafruit/RTClib
-#include <RTClib.h>
+#include <RTClib.h>// I²C address 0x57 (EEPROM) and 0x68 (RTC)
 
 #include "Gps.h"
 

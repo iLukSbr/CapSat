@@ -32,8 +32,8 @@ SOFTWARE.
 // ENS160+AHT21 carbodioximeter, TVOC (total volatile organic compounds) meter and humidimeter
 // https://github.com/DFRobot/DFRobot_ENS160
 // https://github.com/enjoyneering/AHTxx
-#include <DFRobot_ENS160.h>// Address 0x53
-#include <AHTxx.h>// Address 0x38
+#include <DFRobot_ENS160.h>// I²C address 0x53
+#include <AHTxx.h>// I²C address 0x38
 
 #define HUMIDIMETER_SIZE 4// Sensor data quantity
 #define HUMIDITY_KEY "umidade"// JSON humidity key

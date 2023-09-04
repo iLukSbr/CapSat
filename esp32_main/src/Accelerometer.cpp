@@ -31,7 +31,7 @@ Accelerometer::Accelerometer():
     GYROSCOPE_KEY(F("giroscopio"))
 {// Create object
     multiPrintln(F("Starting accelerometer..."));
-    imu->Config(&Wire, bfs::Mpu6500::I2C_ADDR_PRIM);// I²C address 0x68
+    imu->Config(&Wire, bfs::Mpu6500::I2C_ADDR_SEC);// I²C address 0x69
     while(!imu->Begin()){// Waiting for sensor communication
         delay(CALIBRATION_DELAY);
         multiPrintln(F("Waiting for accelerometer..."));

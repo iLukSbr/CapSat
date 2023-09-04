@@ -31,7 +31,7 @@ SOFTWARE.
 
 // MPU-9250 accelerometer/gyroscope
 // https://github.com/bolderflight/invensense-imu
-#include <mpu6500.h>// Address 0x68
+#include <mpu6500.h>// I²C address 0x69 (AD0 HIGH to avoid conflict with RTC)
 
 #define ACCELEROMETER_SIZE 6// Sensor data quantity
 #define ACCELEROMETER_SAMPLE_RATE_DIVIDER 19// MPU-9250 sample rate divider
