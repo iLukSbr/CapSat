@@ -34,8 +34,10 @@ Ozonoscope::Ozonoscope():
     MQ131.begin(OZONOSCOPE_HEATER_PIN, ADS1115_COMP_0_GND, LOW_CONCENTRATION, OZONOSCOPE_RL, OZONOSCOPE_CALIBRATION_CYCLE, adc); 
     multiPrintln(F("Calibrating ozonoscope..."));
     MQ131.calibrate();// Calibrate
-    while(!adc->init())
-        multiPrintln(F("Waiting for ADC..."));
+    while(!adc->init()){
+        multiPrintln(F("Waiting for ozonoscope ADC..."));
+        delay(CALIBRATION_DELAY);
+    }
     multiPrintln(F("Ozonoscope OK!"));
 }
 

@@ -31,6 +31,10 @@ GasMeter::GasMeter():
     multiPrintln(F("Starting gas meter..."));
     gas = new MICS6814(ADS1115_COMP_1_GND, ADS1115_COMP_2_GND, ADS1115_COMP_3_GND, adc);
     gas->calibrate();
+    while(!adc->init()){
+        multiPrintln(F("Waiting for gas meter ADC..."));
+        delay(CALIBRATION_DELAY);
+    }
     multiPrintln(F("Gas meter OK!"));
 }
 

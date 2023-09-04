@@ -30,8 +30,8 @@ Multimeter::Multimeter():
 {// Create object
     multiPrintln(F("Starting multimeter..."));
     while(!mult->init()){// Calibrating
-        delay(1000);
-        multiPrintln(F("Aguardando o voltímetro."));
+        delay(CALIBRATION_DELAY);
+        multiPrintln(F("Waiting for multimeter..."));
     }
     mult->setADCMode(SAMPLE_MODE_128);// Mean value of 128 measures
     mult->setMeasureMode(CONTINUOUS);// Continuous data transmission

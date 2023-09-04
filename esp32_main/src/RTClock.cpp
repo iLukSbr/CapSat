@@ -30,8 +30,10 @@ RTClock::RTClock(const uint16_t& year, const uint8_t& month, const uint8_t& day,
     day_of_the_week(nullptr)
 {// Create object
     multiPrintln(F("Starting RTC..."));
-    while(!rtc->begin())
+    while(!rtc->begin()){
         multiPrintln(F("Waiting for RTC..."));
+        delay(CALIBRATION_DELAY);
+    }
     rtcAdjust(year, month, day, hour, minute, second);
     multiPrintln(F("RTClock OK!"));
 }
