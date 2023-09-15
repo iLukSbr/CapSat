@@ -62,11 +62,12 @@ void Magnetometer::printData(){// Display data for test
 }
 
 void Magnetometer::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries
-    if(!isHTTP)
+    if(!isHTTP){
         for(uint8_t i=0; i<3; i++)
             payload[F(MAGNETOMETER_KEY)][i] = magnetometer_data[i];
-    payload[F(MAGNETOMETER_AZIMUTH_KEY)] = magnetometer_data[3];
-    payload[F(MAGNETOMETER_BEARING_KEY)] = magnetometer_data[4];
+        payload[F(MAGNETOMETER_AZIMUTH_KEY)] = magnetometer_data[3];
+        payload[F(MAGNETOMETER_BEARING_KEY)] = magnetometer_data[4];
+    }
     payload[F(MAGNETOMETER_DIRECTION_KEY)] = magnetometer_direction;
 }
 
