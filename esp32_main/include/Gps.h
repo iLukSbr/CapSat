@@ -70,6 +70,7 @@ class Gps : public Component{
     #endif
     TinyGPSPlus* gps;
     double gps_data[GPS_SIZE] = {0.f};
+    bool signal_status;
     
   public:
     Gps();// Create object
@@ -85,4 +86,5 @@ class Gps : public Component{
     const uint8_t getMinute() const;// Minute
     const uint8_t getSecond() const;// Second
     void gatherDateTime(const bool search);// Get date and time
+    const bool isSignalAcquired() const;// Check if acquired GPS signal
 };

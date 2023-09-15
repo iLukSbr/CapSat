@@ -51,6 +51,7 @@ class RTClock : public Component{
     
   public:
     RTClock(const uint16_t& year, const uint8_t& month, const uint8_t& day, const uint8_t& hour, const uint8_t& minute, const uint8_t& second);// Create object
+    RTClock();
     ~RTClock();// Release memory
     void gatherData() override;// Get data from component
     void printData() override;// Display data for test

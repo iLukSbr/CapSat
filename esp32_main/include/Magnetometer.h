@@ -30,15 +30,25 @@ SOFTWARE.
 #include <Wire.h>
 
 // QMC5883L magnetometer
-// https://github.com/dthain/QMC5883L
-#include <QMC5883L.h>// I²C address 0x0D
+// https://github.com/mprograms/QMC5883LCompass
+#include <QMC5883LCompass.h>// I²C address 0x0D
 
 #define MAGNETOMETER_KEY "magnetometro"// JSON magnetometer key
+#define MAGNETOMETER_DIRECTION_SIZE 4// Direction string length
+#define MAGNETOMETER_SIZE 5// Sensor data quantity
+#define MAGNETOMETER_I2C_ADDRESS 0x0D// I²C address
+#define MAGNETOMETER_SMOOTHING_STEPS 10// Smoothing steps
+#define MAGNETOMETER_ADVANCED_SMOOTHING true// Discard extreme values
+#define MAGNETOMETER_OSR 0x00// Over sample ratio 512
+#define MAGNETOMETER_RNG 0x10// Full scale 8G
+#define MAGNETOMETER_ODR 0x0C// Output data rate 200 Hz
+#define MAGNETOMETER_MODE 0x01// Continuous mode control
 
 class Magnetometer : public Component{
   private:
-    QMC5883L* compass;
-    int magnetometer_data;
+    QMC5883LCompass* compass;
+    int magnetometer_data[MAGNETOMETER_SIZE] = {0};
+    char magnetometer_direction[MAGNETOMETER_DIRECTION_SIZE] = {0};
 
   public:
     Magnetometer();// Create object

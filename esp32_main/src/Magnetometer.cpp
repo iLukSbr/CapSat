@@ -26,12 +26,13 @@ SOFTWARE.
 #include "Magnetometer.h"
 
 Magnetometer::Magnetometer():
-    magnetometer_data(0),
-    compass(new QMC5883L())// Instantiate compass
+    compass(new QMC5883LCompass())// Instantiate compass
 {// Create object
     multiPrintln(F("Starting magnetometer..."));
+    compass->setADDR(MAGNETOMETER_I2C_ADDRESS);
     compass->init();// Calibrate moving throug an 8 pattern on a flat surface
-    compass->setSamplingRate(50);// Amostras (Hz)
+    compass->setMode(MAGNETOMETER_MODE, MAGNETOMETER_ODR, MAGNETOMETER_RNG, MAGNETOMETER_OSR);
+    compass->setSmoothing(MAGNETOMETER_SMOOTHING_STEPS, MAGNETOMETER_ADVANCED_SMOOTHING);
     multiPrintln(F("Magnetometer OK!"));
 }
 
@@ -41,21 +42,37 @@ Magnetometer::~Magnetometer(){// Release memory
 
 void Magnetometer::gatherData(){// Get data from component
     multiPrintln(F("Gathering magnetometer data..."));
-    magnetometer_data = compass->readHeading();// Compass direction (°)
+    compass->read();
+	magnetometer_data[0] = compass->getX();// X
+	magnetometer_data[1] = compass->getY();// Y
+	magnetometer_data[2] = compass->getZ();// Z
+	magnetometer_data[3] = compass->getAzimuth();// Azimuth
+	magnetometer_data[4] = compass->getBearing(magnetometer_data[3]);// Bearing
+    compass->getDirection(magnetometer_direction, magnetometer_data[3]);// Direction
+    magnetometer_direction[3] = '\0';
 }
 
 void Magnetometer::printData(){// Display data for test
     multiPrint(F("Magnetometer: "));
-    multiPrint(magnetometer_data);
-    multiPrintln();
+    for(uint8_t i=0; i<MAGNETOMETER_SIZE; i++){
+        multiPrint(magnetometer_data[i]);
+        multiPrint(F(" "));
+    }
+    multiPrintln(magnetometer_direction);
 }
 
 void Magnetometer::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries
     if(!isHTTP)
-        payload[F(MAGNETOMETER_KEY)] = magnetometer_data;
+        for(uint8_t i=0; i<MAGNETOMETER_SIZE; i++)
+            payload[F(MAGNETOMETER_KEY)][i] = magnetometer_data[i];
+    payload[F(MAGNETOMETER_KEY)][4] = magnetometer_direction;
 }
 
 void Magnetometer::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
-    my_file->print(magnetometer_data);
+    for(uint8_t i=0; i<MAGNETOMETER_SIZE; i++){
+        my_file->print(magnetometer_data[i]);
+        my_file->print(F(","));
+    }
+    my_file->print(magnetometer_direction);
     my_file->print(F(","));
 }

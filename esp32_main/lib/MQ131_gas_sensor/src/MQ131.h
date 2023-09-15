@@ -127,7 +127,7 @@ class MQ131Class {
 
 		// Calibration of R0
 		float valueR0 = -1;
-		uint8_t MQ131_DEFAULT_STABLE_CYCLE = 11;
+		uint8_t MQ131_DEFAULT_STABLE_CYCLE = 1;
 
 		// Last value for sensor resistance
 		float lastValueRs = -1;

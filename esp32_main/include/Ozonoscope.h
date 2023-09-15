@@ -41,7 +41,7 @@ Analog output = 0 - 4.2 V (need level shifter)
 
 #define ADC_I2C_ADDRESS 0x48// ADS1115 I²C address
 #define OZONOSCOPE_HEATER_PIN 33// Ozonoscope heater digital pin
-#define OZONOSCOPE_CALIBRATION_CYCLE 11// Number of stable cycles to consider calibrated
+#define OZONOSCOPE_CALIBRATION_CYCLE 1// Number of stable cycles to consider calibrated
 #define OZONOSCOPE_RL 1000000// 1M heater resistor (Ohm)
 #define O3_KEY "O3"// JSON ozone concentration key
 

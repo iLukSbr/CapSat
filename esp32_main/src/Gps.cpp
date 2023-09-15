@@ -26,6 +26,7 @@ SOFTWARE.
 #include "Gps.h"
 
 Gps::Gps():
+    signal_status(false),
     gps(new TinyGPSPlus()),
     #if defined(ESP32) || defined(ESP8266)// For ESP
       gpsSerial(new HardwareSerial(UART_NUM_0))
@@ -35,7 +36,7 @@ Gps::Gps():
 {// Create object
     multiPrintln(F("Starting GPS..."));
     gpsSerial->begin(SERIAL_BAUD_RATE);// Serial baud rate
-    gatherDateTime(true);
+    gatherDateTime(false);
     multiPrintln(F("GPS OK!"));
 }
 
@@ -132,12 +133,24 @@ const uint8_t Gps::getSecond() const{
 }
 
 void Gps::gatherDateTime(const bool search){// Get date and time, keep searching signal if true
+    uint8_t i = 0;
     do{
         gatherData();
         delay(CALIBRATION_DELAY);
         multiPrintln(F("Searching for GPS signal..."));
-    }while(search && ((!gps->date.isValid() || !gps->time.isValid()) || gps->date.year()>ACTUAL_YEAR));// Colecting date and time
+        i++;
+        if(i > 10 && !search){
+            multiPrintln(F("GPS signal not found, timeout!"));
+            return;
+        }
+    }while((!gps->date.isValid() || !gps->time.isValid()) || gps->date.year()>ACTUAL_YEAR);// Colecting date and time
+    if(!signal_status)
+        signal_status = true;
     setTime(gps->time.hour(), gps->time.minute(), gps->time.second() + UTC_GPS_TIME_DRIFT, gps->date.day(), gps->date.month(), gps->date.year());
     adjustTime(UTC_OFFSET*SECS_PER_HOUR);
     delay(CALIBRATION_DELAY);
+}
+
+const bool Gps::isSignalAcquired() const{
+    return signal_status;
 }

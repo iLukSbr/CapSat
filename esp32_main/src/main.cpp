@@ -118,9 +118,10 @@ SOFTWARE.
 
 /* === Constant values === */
 #define TEAM_ID 99// Team ID number
+#define GATHER_DELAY 10000// Sensors data gathering delay (ms)
 #define HTTP_SENDING_DELAY 240000// HTTP sending delay (ms)
 #define COMPONENTS_VECTOR_SIZE 14// Components quantity inside vector
-#define RELAY_PIN 32// Relay pin
+#define SWITCH_PIN 32// On/off switch pin
 
 /* === Strings === */
 #define WIFI_SSID "OBSAT"// WiFi SSID
@@ -130,6 +131,8 @@ SOFTWARE.
 #define TEAM_KEY "equipe"// JSON team key
 
 /* === Components === */
+unsigned long stopwatch_sensors = 0;// Stopwatch for timed sensor reading
+
 // Initial configuration
 Gps* m8n;
 MicroSDReaderWriter* microsd;
@@ -169,7 +172,10 @@ void pushAll(){
   // Initial configuration
   component_list.push_back(dynamic_cast<Component*>(m8n = new Gps()));
   delay(CALIBRATION_DELAY);
-  component_list.push_back(dynamic_cast<Component*>(ds3231 = new RTClock(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond())));
+  if(m8n->isSignalAcquired())
+    component_list.push_back(dynamic_cast<Component*>(ds3231 = new RTClock(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond())));
+  else
+    component_list.push_back(dynamic_cast<Component*>(ds3231 = new RTClock()));
   delay(CALIBRATION_DELAY);
   microsd = new MicroSDReaderWriter(ds3231->getDateTime());// SPI
 
@@ -179,20 +185,20 @@ void pushAll(){
   component_list.push_back(dynamic_cast<Component*>(pmsa003 = new ParticulateMeter()));
 
   // I²C
-  // component_list.push_back(dynamic_cast<Component*>(ens160aht21 = new Humidimeter()));
+  component_list.push_back(dynamic_cast<Component*>(ens160aht21 = new Humidimeter()));
   component_list.push_back(dynamic_cast<Component*>(ina219 = new Multimeter()));
   component_list.push_back(dynamic_cast<Component*>(mpu9250 = new Accelerometer()));
   component_list.push_back(dynamic_cast<Component*>(ms5611 = new Altimeter()));
-  // component_list.push_back(dynamic_cast<Component*>(qmc5883l = new Magnetometer()));
+  component_list.push_back(dynamic_cast<Component*>(qmc5883l = new Magnetometer()));
   
   // ADC I²C
   component_list.push_back(dynamic_cast<Component*>(mics6814 = new GasMeter()));
-  // component_list.push_back(dynamic_cast<Component*>(mq131 = new Ozonoscope()));
+  component_list.push_back(dynamic_cast<Component*>(mq131 = new Ozonoscope()));
 
   // Analog
   component_list.push_back(dynamic_cast<Component*>(mhrd = new Rainmeter()));
   component_list.push_back(dynamic_cast<Component*>(ntc = new Thermometer()));
-  // component_list.push_back(dynamic_cast<Component*>(taidacent = new UVRadiometer()));
+  component_list.push_back(dynamic_cast<Component*>(taidacent = new UVRadiometer()));
 }
 
 /* === Components start and calibration === */
@@ -217,9 +223,9 @@ void pushAll(){
 #endif
 
 void calibrateMQ131(){
-//   ens160aht21->gatherData();
+  ens160aht21->gatherData();
   ntc->gatherData();
-//   mq131->setClimateParameters(ntc->getTemperature(), ens160aht21->getHumidity());
+  mq131->setClimateParameters(ntc->getTemperature(), ens160aht21->getHumidity());
 }
 
 void beginAll(){
@@ -233,10 +239,6 @@ void beginAll(){
 /* === Gather components data === */
 void gatherDataAll(){
   calibrateMQ131();
-  if(!ds3231->checkValidDate(m8n->getMinute())){// If date and time shifted
-    m8n->gatherDateTime(false);
-    ds3231->rtcAdjust(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond());
-  }
   for(auto element : component_list)
     element->gatherData();
 }
@@ -302,17 +304,20 @@ void saveJSONToFileAll(const String& doc_serialized){
     msg.multiPrintln(doc_serialized);
   }
 
-  unsigned long stopwatch = 0;// Stopwatch for timed data sending
+  unsigned long stopwatch_http = 0;// Stopwatch for timed data sending
 #endif
 
-// void powerOnComponents(){
-//   digitalWrite(RELAY_PIN, HIGH);
-//   msg.multiPrintln(F("Relay OK!"));
-// }
+void powerOn3V3(){
+  pinMode(SWITCH_PIN, OUTPUT);
+  digitalWrite(SWITCH_PIN, HIGH);
+  msg.multiPrintln(F("3V3 line ON!"));
+}
 
-// void powerOffComponents(){
-//   digitalWrite(RELAY_PIN, LOW);
-// }
+void powerOff3V3(){
+  pinMode(SWITCH_PIN, OUTPUT);
+  digitalWrite(SWITCH_PIN, LOW);
+  msg.multiPrintln(F("3V3 line OFF!"));
+}
 
 void deleteAll(){
   for(auto element : component_list)
@@ -322,8 +327,7 @@ void deleteAll(){
 
 /* === Start configuration === */
 void setup(){
-  // pinMode(RELAY_PIN, OUTPUT);
-  // powerOnComponents();
+  // powerOn3V3();
   Serial.begin(SERIAL_BAUD_RATE);
   delay(CALIBRATION_DELAY);
   beginAll();
@@ -332,22 +336,24 @@ void setup(){
 
 /* === Data gathering loop === */
 void loop(){
-  gatherDataAll();
-  #ifdef JSON_FORMAT
-    saveJSONToFileAll(makeJSONAll(false));
-  #else
-    saveCSVToFileAll();
-  #endif
-  printAll();
-  msg.multiPrint("Elapsed time: ");
-  msg.multiPrintln(millis());
-  #if defined(ESP32) || defined(ESP8266)// For ESP
-    msg.multiPrint("Last JSON sent: ");
-    msg.multiPrintln(stopwatch);
-    if(millis() - stopwatch >= HTTP_SENDING_DELAY || !stopwatch){
-      sendJSONToServerAll(makeJSONAll(true));
-      stopwatch = millis();
-    }
-  #endif
-  delay(CALIBRATION_DELAY);
+  if(millis() - stopwatch_sensors > GATHER_DELAY || !stopwatch_sensors){
+    msg.multiPrint(F("Running time of last data gathered: "));
+    msg.multiPrintln(stopwatch_sensors);
+    stopwatch_sensors = millis();
+    gatherDataAll();
+    #ifdef JSON_FORMAT
+      saveJSONToFileAll(makeJSONAll(false));
+    #else
+      saveCSVToFileAll();
+    #endif
+    printAll();
+    #if defined(ESP32) || defined(ESP8266)// For ESP
+      msg.multiPrint(F("Running time of last JSON sent: "));
+      msg.multiPrintln(stopwatch_http);
+      if(millis() - stopwatch_http >= HTTP_SENDING_DELAY || !stopwatch_http){
+        sendJSONToServerAll(makeJSONAll(true));
+        stopwatch_http = millis();
+      }
+    #endif
+  }
 }

@@ -67,6 +67,17 @@ SOFTWARE.
 // OV5640 camera 2592x1944 200°
 #include <ESP32_OV5640_AF.h>
 
+// Serial web server
+// https://github.com/me-no-dev/AsyncTCP
+// https://github.com/ayushsharma82/WebSerial
+// https://github.com/me-no-dev/ESPAsyncWebServer
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <WebSerial.h>
+
+// Prints
+#include "message.h"
+
 /* === Definitions === */
 #define SERIAL_BAUD_RATE 230400// Serial baud rate
 #define WIFI_SSID "OBSAT"// Wi-Fi SSID
@@ -87,20 +98,32 @@ SOFTWARE.
 OV5640* ov5640 = nullptr;// Camera
 // HardwareSerial* camSerial = nullptr;// UART for main MCU communication
 
+// Serial web server
+AsyncWebServer server(80);
+
 time_t stopwatch = 0;
 uint64_t picture_number = 0;
 
 void beginWiFi(){
+  WiFi.mode(WIFI_STA);
   WiFi.begin(F(WIFI_SSID), F(WIFI_PASSWORD));
   WiFi.setSleep(false);
   while(WiFi.status() != WL_CONNECTED){
     delay(CALIBRATION_DELAY);
-    Serial.println(F("Waiting for WiFi connection..."));
+    multiPrintln(F("Waiting for WiFi connection..."));
   }
   WiFi.setAutoReconnect(true);
+  delay(CALIBRATION_DELAY);
+  WebSerial.begin(&server);
+  delay(CALIBRATION_DELAY);
+  server.begin();
+  Serial.println(WiFi.localIP());
+  multiPrintln(F("WiFi OK!"));
+  delay(CALIBRATION_DELAY);
 }
 
 void setup(){
+  beginWiFi();
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);// Disable brownout detector
   Serial.begin(SERIAL_BAUD_RATE);
   camera_config_t config;
@@ -136,7 +159,7 @@ void setup(){
     config.fb_count = 1;
   }
   while(esp_camera_init(&config) != ESP_OK) {
-    Serial.print(F("Initializing camera..."));
+    multiPrint(F("Initializing camera..."));
     delay(CALIBRATION_DELAY);
   }
   ov5640 = new OV5640();
@@ -144,12 +167,11 @@ void setup(){
   ov5640->focusInit();
   ov5640->autoFocusMode();
   while(!SD_MMC.begin() || SD_MMC.cardType() == CARD_NONE){
-    Serial.println(F("Initializing MicroSD card..."));
+    multiPrintln(F("Initializing MicroSD card..."));
     delay(CALIBRATION_DELAY);
   }
   // camSerial = new HardwareSerial(UART_NUM_0);
   // camSerial->begin(SERIAL_BAUD_RATE);
-  beginWiFi();
 }
 
 void loop(){
@@ -160,10 +182,10 @@ void loop(){
   // }
   if(millis() - stopwatch >= DEFAULT_PICTURE_DELAY){
     while(ov5640->getFWStatus() != FW_STATUS_S_FOCUSED)
-      Serial.println(F("Focusing..."));
+      multiPrintln(F("Focusing..."));
     camera_fb_t* fb = esp_camera_fb_get();// Take a picture with camera
     while(!fb)
-      Serial.println(F("Taking a picture..."));
+      multiPrintln(F("Taking a picture..."));
     esp_camera_fb_return(fb);
     EEPROM.begin(EEPROM_SIZE);// initialize EEPROM with predefined size
     picture_number = EEPROM.read(0) + 1;
@@ -171,7 +193,7 @@ void loop(){
     fs::FS &fs = SD_MMC;
     File file = fs.open(path.c_str(), FILE_WRITE);
     while(!file){
-      Serial.println(F("Saving photo..."));
+      multiPrintln(F("Saving photo..."));
       delay(CALIBRATION_DELAY);
       file = fs.open(path.c_str(), FILE_WRITE);
     }
@@ -181,9 +203,12 @@ void loop(){
     file.close();
     esp_camera_fb_return(fb);
     // camSerial->println(PICTURE_SUCCESS);
+    multiPrintln(F("Success taking picture!"));
     stopwatch = millis();
   }
-  // else
+  // else{
     // camSerial->println(PICTURE_FAILURE);
+    // multiPrintln(F("Failure taking picture!"));
+  // }
   // uart_code_received = 0;
 }

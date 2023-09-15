@@ -37,9 +37,23 @@ RTClock::RTClock(const uint16_t& year, const uint8_t& month, const uint8_t& day,
     rtcAdjust(year, month, day, hour, minute, second);
     multiPrintln(F("RTClock OK!"));
 }
+
+RTClock::RTClock():
+    rtc(new RTC_DS3231()),// Instatiate RTC
+    day_of_the_week(nullptr)
+{// Create object
+    multiPrintln(F("Starting RTC..."));
+    while(!rtc->begin()){
+        multiPrintln(F("Waiting for RTC..."));
+        delay(CALIBRATION_DELAY);
+    }
+    multiPrintln(F("RTClock OK!"));
+}
+
 RTClock::~RTClock(){// Release memory
     delete rtc;
 }
+
 void RTClock::gatherData(){// Get data from component
     multiPrintln(F("Gathering RTClock data..."));
     DateTime now = rtc->now();// Get real time
