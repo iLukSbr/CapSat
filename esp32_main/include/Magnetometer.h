@@ -43,6 +43,9 @@ SOFTWARE.
 #define MAGNETOMETER_RNG 0x10// Full scale 8G
 #define MAGNETOMETER_ODR 0x0C// Output data rate 200 Hz
 #define MAGNETOMETER_MODE 0x01// Continuous mode control
+#define MAGNETOMETER_AZIMUTH_KEY "azimute"// JSON compass azimuth key
+#define MAGNETOMETER_BEARING_KEY "rumo"// JSON compass bearing key
+#define MAGNETOMETER_DIRECTION_KEY "direcao"// JSON compass direction key
 
 class Magnetometer : public Component{
   private:
