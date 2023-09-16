@@ -26,7 +26,7 @@ uint8_t OV5640::focusInit() {
   uint16_t i;
   uint16_t addr = 0x8000;
   uint8_t state = 0x8F;
-  uint8_t rc = 0;
+  int8_t rc = 0;
   rc = sensor->set_reg(sensor, 0x3000, 0xff, 0x20);  //reset
   if (rc < 0) return -1;
 

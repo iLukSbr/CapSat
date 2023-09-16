@@ -67,6 +67,11 @@ SOFTWARE.
 // OV5640 camera 2592x1944 200°
 #include <ESP32_OV5640_AF.h>
 
+// Utils
+#include <esp_timer.h>
+#include <img_converters.h>
+#include <StringArray.h>
+
 // Serial web server
 // https://github.com/me-no-dev/AsyncTCP
 // https://github.com/ayushsharma82/WebSerial
@@ -79,17 +84,16 @@ SOFTWARE.
 #include "message.h"
 
 /* === Definitions === */
-#define SERIAL_BAUD_RATE 230400// Serial baud rate
+#define SERIAL_BAUD_RATE 115200// Serial baud rate
 #define WIFI_SSID "OBSAT"// Wi-Fi SSID
-#define WIFI_PASSWORD "OBSAT2023"// Wi-Fi password
+#define WIFI_PASSWORD "OBSAT"// Wi-Fi password
 #define CALIBRATION_DELAY 1000// Delay to retry calibration (ms)
 #define DEFAULT_PICTURE_DELAY 60000// Delay to take a picture (ms)
-#define PICTURE_SUCCESS 1// Picture taken succesfully code
-#define PICTURE_FAILURE 2// Picture failure code
-#define DATA_REQUESTED 1// Data and picture request code
+#define TRIES_STEPS 30// How many tries
+#define FLASH_PIN 4// Camera flash GPIO pin
 
 /* === Camera definitions === */
-#define HZ_CLK_FREQ 6000000
+#define HZ_CLK_FREQ 16500000
 #define EEPROM_SIZE 8// Define the number of bytes you want to access
 #define CAMERA_MODEL_AI_THINKER
 #include "camera_pins.h"// Camera models
@@ -101,16 +105,72 @@ OV5640* ov5640 = nullptr;// Camera
 // Serial web server
 AsyncWebServer server(80);
 
+Message msg;
+
 time_t stopwatch = 0;
 uint64_t picture_number = 0;
+bool new_photo = false;
+String path_web = "/1.jpg";// Filename
+
+const char index_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE HTML><html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { text-align:center; }
+    .vert { margin-bottom: 10%; }
+    .hori{ margin-bottom: 0%; }
+    button {
+  background-color: #21b555;
+  border: none;
+  padding: 7px 10px;
+  text-align: center;
+  font-size: 10px;
+  border-radius: 2px;
+  width: 50%;
+  color: white;
+}
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h2>ESP32-CAM Photo Web Server</h2>
+    <p><button onclick="rotatePhoto();">ROTATE PHOTO</button></p>
+    <p><button onclick="location.reload();">REFRESH PAGE</button></p>
+    <form value="request" onsubmit="requestPicture();">
+        <p><input type="number" id="pictureNumber" placeholder="PICTURE NUMBER"></p>
+        <p><button type="submit">REQUEST PHOTO</button></p>
+    </form>
+  </div>
+  <div><img src="saved-photo" id="photo" width="100%" height="100%"></div>
+</body>
+<script>
+  var deg = 0;
+  function requestPicture(){
+    var xhr = new XMLHttpRequest();
+    var pictureNumber = document.getElementById("pictureNumber").value;
+    var url = "/request?pictureNumber=" + encodeURIComponent(pictureNumber);
+    xhr.open('GET', url, true);
+    xhr.send();
+  }
+  function rotatePhoto(){
+    var img = document.getElementById("photo");
+    deg += 90;
+    if(isOdd(deg/90)){document.getElementById("container").className = "vert";}
+    else{document.getElementById("container").className = "hori";}
+    img.style.transform = "rotate(" + deg + "deg)";
+  }
+  function isOdd(n){return Math.abs(n % 2) == 1;}
+</script>
+</html>)rawliteral";
 
 void beginWiFi(){
   WiFi.mode(WIFI_STA);
   WiFi.begin(F(WIFI_SSID), F(WIFI_PASSWORD));
   WiFi.setSleep(false);
   while(WiFi.status() != WL_CONNECTED){
+    Serial.println(F("Waiting for WiFi connection..."));
     delay(CALIBRATION_DELAY);
-    multiPrintln(F("Waiting for WiFi connection..."));
   }
   WiFi.setAutoReconnect(true);
   delay(CALIBRATION_DELAY);
@@ -118,14 +178,17 @@ void beginWiFi(){
   delay(CALIBRATION_DELAY);
   server.begin();
   Serial.println(WiFi.localIP());
-  multiPrintln(F("WiFi OK!"));
+  Serial.println(F("WiFi OK!"));
   delay(CALIBRATION_DELAY);
 }
 
 void setup(){
-  beginWiFi();
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);// Disable brownout detector
+  delay(CALIBRATION_DELAY);
   Serial.begin(SERIAL_BAUD_RATE);
+  while(!Serial);
+  Serial.println(F("ESP32-CAM started!"));
+  beginWiFi();
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -147,10 +210,9 @@ void setup(){
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = HZ_CLK_FREQ;
   config.pixel_format = PIXFORMAT_JPEG;
-  config.frame_size = FRAMESIZE_VGA;
   if(psramFound()){
     config.frame_size = FRAMESIZE_UXGA;// Framesizes: QVGA|CIF|VGA|SVGA|XGA|SXGA|UXGA
-    config.jpeg_quality = 0;
+    config.jpeg_quality = 3;
     config.fb_count = 2;
   }
   else{
@@ -158,8 +220,8 @@ void setup(){
     config.jpeg_quality = 12;
     config.fb_count = 1;
   }
-  while(esp_camera_init(&config) != ESP_OK) {
-    multiPrint(F("Initializing camera..."));
+  while(esp_camera_init(&config) != ESP_OK){
+    msg.multiPrint(F("Initializing camera..."));
     delay(CALIBRATION_DELAY);
   }
   ov5640 = new OV5640();
@@ -167,48 +229,74 @@ void setup(){
   ov5640->focusInit();
   ov5640->autoFocusMode();
   while(!SD_MMC.begin() || SD_MMC.cardType() == CARD_NONE){
-    multiPrintln(F("Initializing MicroSD card..."));
-    delay(CALIBRATION_DELAY);
+    msg.multiPrintln(F("Initializing MicroSD card..."));
   }
-  // camSerial = new HardwareSerial(UART_NUM_0);
-  // camSerial->begin(SERIAL_BAUD_RATE);
+  EEPROM.begin(EEPROM_SIZE);// initialize EEPROM with predefined size
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest * request){
+    request->send_P(200, "text/html", index_html);
+  });
+  server.on("/request", HTTP_GET, [](AsyncWebServerRequest * request){
+    if(request->hasParam("pictureNumber")){
+      String pictureNumber = request->getParam("pictureNumber")->value();
+      path_web = "/" + pictureNumber + ".jpg";
+      msg.multiPrint(F("Request received to open picture "));
+      msg.multiPrintln(path_web);
+    }
+    request->send_P(200, "text/html", index_html);
+  });
+  server.on("/saved-photo", HTTP_GET, [](AsyncWebServerRequest * request){
+    request->send(SD_MMC, path_web, "image/jpg", false);
+  });
+  server.begin();
 }
 
 void loop(){
-  // uint8_t uart_code_received = 0;
-  // if(camSerial->available()){// UART communication
-  //   while(uart_code_received != 1 && millis() - stopwatch < DEFAULT_PICTURE_DELAY)
-  //     uart_code_received = camSerial->read();
-  // }
-  if(millis() - stopwatch >= DEFAULT_PICTURE_DELAY){
-    while(ov5640->getFWStatus() != FW_STATUS_S_FOCUSED)
-      multiPrintln(F("Focusing..."));
+  if(millis() - stopwatch >= DEFAULT_PICTURE_DELAY || !stopwatch){
+    msg.multiPrint(F("Web picture path: "));
+    msg.multiPrintln(path_web);
+    uint8_t i = 0;
+    while(ov5640->getFWStatus() != FW_STATUS_S_FOCUSED){
+        msg.multiPrintln(F("Focusing..."));
+        delay(CALIBRATION_DELAY);
+        if(++i > TRIES_STEPS){
+            msg.multiPrintln(F("Not focused, timeout!"));
+            break;
+        }
+    }
     camera_fb_t* fb = esp_camera_fb_get();// Take a picture with camera
-    while(!fb)
-      multiPrintln(F("Taking a picture..."));
-    esp_camera_fb_return(fb);
-    EEPROM.begin(EEPROM_SIZE);// initialize EEPROM with predefined size
+    i = 0;
+    while(!fb){
+      msg.multiPrintln(F("Taking a picture..."));
+      delay(CALIBRATION_DELAY);
+      if(++i > TRIES_STEPS){
+          msg.multiPrintln(F("Picture not taken, timeout!"));
+          break;
+      }
+    }
+    stopwatch = millis();
     picture_number = EEPROM.read(0) + 1;
-    String path = "/pictures" + String(picture_number) + ".jpg";// Path where new picture will be saved in SD Card
+    String path = "/" + String(picture_number) + ".jpg";// Filename
+    path_web = path;
+    msg.multiPrint(F("File path: "));
+    msg.multiPrintln(path);
     fs::FS &fs = SD_MMC;
     File file = fs.open(path.c_str(), FILE_WRITE);
+    i = 0;
     while(!file){
-      multiPrintln(F("Saving photo..."));
+      msg.multiPrintln(F("Saving photo..."));
       delay(CALIBRATION_DELAY);
       file = fs.open(path.c_str(), FILE_WRITE);
+      if(++i > TRIES_STEPS){
+          msg.multiPrintln(F("Photo not saved, timeout!"));
+          break;
+      }
     }
+    delay(CALIBRATION_DELAY);
     file.write(fb->buf, fb->len);// Payload (image), payload length
+    delay(30*CALIBRATION_DELAY);
+    file.close();
     EEPROM.write(0, picture_number);
     EEPROM.commit();
-    file.close();
     esp_camera_fb_return(fb);
-    // camSerial->println(PICTURE_SUCCESS);
-    multiPrintln(F("Success taking picture!"));
-    stopwatch = millis();
   }
-  // else{
-    // camSerial->println(PICTURE_FAILURE);
-    // multiPrintln(F("Failure taking picture!"));
-  // }
-  // uart_code_received = 0;
 }

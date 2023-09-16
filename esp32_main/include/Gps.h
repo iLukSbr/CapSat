@@ -46,6 +46,7 @@ SOFTWARE.
 #define ACTUAL_YEAR 2023// Date year validation
 #define UTC_OFFSET -3// UTC time zone
 #define UTC_GPS_TIME_DRIFT 19// GPS time delayed behind UTC (s)
+#define GPS_BAUD_RATE 9600// GPS baud rate
 #define GPS_SIZE 6// Sensor data quantity
 #define GPS_DECIMAL_PLACES 6// Decimal places for GPS coordinates
 #define GPS_MIN_CHARS_PROCESSED 6// Minimum GPS data received to be considered lost information

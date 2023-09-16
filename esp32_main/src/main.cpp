@@ -329,6 +329,8 @@ void deleteAll(){
 void setup(){
   // powerOn3V3();
   Serial.begin(SERIAL_BAUD_RATE);
+  while(!Serial);
+  Serial.println(F("ESP32 started!"));
   delay(CALIBRATION_DELAY);
   beginAll();
   delay(CALIBRATION_DELAY);

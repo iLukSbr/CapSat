@@ -35,7 +35,7 @@ Gps::Gps():
     #endif
 {// Create object
     multiPrintln(F("Starting GPS..."));
-    gpsSerial->begin(SERIAL_BAUD_RATE);// Serial baud rate
+    gpsSerial->begin(GPS_BAUD_RATE);// Serial baud rate
     gatherDateTime(false);
     multiPrintln(F("GPS OK!"));
 }

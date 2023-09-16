@@ -49,7 +49,7 @@ void Multimeter::gatherData(){// Get data from component
     multimeter_data[0] = (float)map(mult->readRegister(0x02),2,866,2400,15740)/1000.f;// Voltage (V)
     multiPrint("Raw voltage reading: ");
     multiPrintln(mult->readRegister(0x02));
-    multimeter_data[1] = constrain((float)map((long)(multimeter_data[0]*100.0), 1000, 1680, 0, 100000)/1000.f, 0.f, 100.f);// Battery percentage (%)
+    multimeter_data[1] = constrain((float)map((long)(multimeter_data[0]*100.0), 1176, 1680, 0, 100000)/1000.f, 0.f, 100.f);// Battery percentage (%)
     multimeter_data[2] = mult->getCurrent_mA();// Electric current (mA)
     multimeter_data[3] = multimeter_data[2]*multimeter_data[0];// Electric power (mW)
 }
