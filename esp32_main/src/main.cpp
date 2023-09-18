@@ -124,8 +124,8 @@ SOFTWARE.
 #define SWITCH_PIN 32// On/off switch pin
 
 /* === Strings === */
-#define WIFI_SSID "OBSAT"// WiFi SSID
-#define WIFI_PASSWORD "OBSAT"// WiFi password
+#define WIFI_SSID "OBSAT_WIFI"// WiFi SSID
+#define WIFI_PASSWORD "OBSatZenith1000"// WiFi password
 #define HTTP_WEBSITE "https://obsat.org.br/teste_post/envio.php"// HTTP POST website
 #define PAYLOAD_KEY "payload"// JSON payloade key
 #define TEAM_KEY "equipe"// JSON team key

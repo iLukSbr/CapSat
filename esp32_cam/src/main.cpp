@@ -85,8 +85,8 @@ SOFTWARE.
 
 /* === Definitions === */
 #define SERIAL_BAUD_RATE 115200// Serial baud rate
-#define WIFI_SSID "OBSAT"// Wi-Fi SSID
-#define WIFI_PASSWORD "OBSAT"// Wi-Fi password
+#define WIFI_SSID "OBSAT_WIFI"// Wi-Fi SSID
+#define WIFI_PASSWORD "OBSatZenith1000"// Wi-Fi password
 #define CALIBRATION_DELAY 1000// Delay to retry calibration (ms)
 #define DEFAULT_PICTURE_DELAY 60000// Delay to take a picture (ms)
 #define TRIES_STEPS 30// How many tries
@@ -212,7 +212,7 @@ void setup(){
   config.pixel_format = PIXFORMAT_JPEG;
   if(psramFound()){
     config.frame_size = FRAMESIZE_UXGA;// Framesizes: QVGA|CIF|VGA|SVGA|XGA|SXGA|UXGA
-    config.jpeg_quality = 3;
+    config.jpeg_quality = 10;
     config.fb_count = 2;
   }
   else{
@@ -251,7 +251,7 @@ void setup(){
 }
 
 void loop(){
-  if(millis() - stopwatch >= DEFAULT_PICTURE_DELAY || !stopwatch){
+  // if(millis() - stopwatch >= DEFAULT_PICTURE_DELAY || !stopwatch){
     msg.multiPrint(F("Web picture path: "));
     msg.multiPrintln(path_web);
     uint8_t i = 0;
@@ -293,10 +293,10 @@ void loop(){
     }
     delay(CALIBRATION_DELAY);
     file.write(fb->buf, fb->len);// Payload (image), payload length
-    delay(30*CALIBRATION_DELAY);
+    delay(10*CALIBRATION_DELAY);
     file.close();
     EEPROM.write(0, picture_number);
     EEPROM.commit();
     esp_camera_fb_return(fb);
-  }
+  // }
 }
