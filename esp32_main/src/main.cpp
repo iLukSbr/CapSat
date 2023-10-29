@@ -43,6 +43,12 @@ SOFTWARE.
 
 #include <Arduino.h>// Arduino compatibility
 
+/* Multitasking */
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <freertos/semphr.h>
+#include <freertos/queue.h>
+
 // Vector creator
 // https://github.com/janelia-arduino/Vector
 #include <Vector.h>
@@ -160,7 +166,7 @@ UVRadiometer* taidacent;
 
 // Serial web server
 AsyncWebServer server(80);
-
+SemaphoreHandle_t xSerial_semaphore;
 // Messages
 Message msg;
 
