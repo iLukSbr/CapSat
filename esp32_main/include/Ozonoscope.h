@@ -34,6 +34,10 @@ SOFTWARE.
 // https://github.com/wollewald/ADS1115_WE
 #include <ADS1115_WE.h>
 
+#ifndef OZONOSCOPE
+  #define OZONOSCOPE 1
+#endif
+
 /*
 VIN = 5 V
 Analog output = 0 - 4.2 V (need level shifter)
@@ -58,4 +62,5 @@ class Ozonoscope : public Component{
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
     void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
     void setClimateParameters(float temperature, float humidity);// Define climate parameters
+    void start() override;
 };

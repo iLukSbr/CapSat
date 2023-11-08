@@ -30,6 +30,10 @@ SOFTWARE.
 
 #include "Message.h"
 
+#ifndef MICROSD_READER_WRITER
+  #define MICROSD_READER_WRITER 1
+#endif
+
 #define JSON_FORMAT// Save as .json
 // #define CSV_FORMAT// Save as .csv
 
@@ -46,6 +50,7 @@ SOFTWARE.
 
 class MicroSDReaderWriter : public Message{
   private:
+    bool started;
     SdFat* sd;// MicroSD card
     SdFile* my_file;// File
     char datafileName[DATAFILE_NAME_LENGTH];// Filename
@@ -53,5 +58,7 @@ class MicroSDReaderWriter : public Message{
   public:
     MicroSDReaderWriter(const char* _datafileName);// Create object
     ~MicroSDReaderWriter();// Release memory
+    bool isStarted() const;
     SdFile* gatherData();// Get data from component
+    void start();
 };

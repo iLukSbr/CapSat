@@ -33,9 +33,8 @@ ESP32Camera::ESP32Camera():
         camSerial(new SoftwareSerial(ESP32CAMERA_RX_PIN, ESP32CAMERA_TX_PIN))
     #endif
 {
-    multiPrintln(F("Starting camera..."));
     camSerial->begin(SERIAL_BAUD_RATE);
-    multiPrintln(F("Camera OK!"));
+    start();
 }
 
 ESP32Camera::~ESP32Camera(){
@@ -43,14 +42,14 @@ ESP32Camera::~ESP32Camera(){
 }
 
 void ESP32Camera::gatherData(){// Get data from component
-    multiPrintln(F("Gathering camera data..."));
+    multiPrintln(F("Gathering camera ESP32-CAM data..."));
     camSerial->println(ESP32CAMERA_REQUEST_ID);
     if(camSerial->available())// If data was received
         camSerial->read()==1 ? esp32camera_data=true : esp32camera_data=false;// True if a picture was successfully taken in the last attempt
 }
 
 void ESP32Camera::printData(){// Display data for test
-    multiPrint("ESP32-CAM: ");
+    multiPrint("Camera ESP32-CAM: ");
     multiPrint(esp32camera_data);
     multiPrintln();
 }
@@ -62,6 +61,12 @@ void ESP32Camera::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& pa
 void ESP32Camera::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
     my_file->print(esp32camera_data ? 0 : 1);
     my_file->print(F(","));
+}
+
+void ESP32Camera::start(){
+    multiPrintln(F("Starting ESP32-CAM camera..."));
+    started = true;
+    multiPrintln(F("Camera ESP32-CAM OK!"));
 }
 
 void ESP32Camera::takePicture(){// Take a picture

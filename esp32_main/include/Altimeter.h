@@ -35,6 +35,10 @@ SOFTWARE.
 
 #include <cmath>// Math functions
 
+#ifndef ALTIMETER
+  #define ALTIMETER 1
+#endif
+
 #define MS5611_I2C_ADDRESS 0x77// I²C address
 #define ALTIMETER_SIZE 2// Sensor data quantity
 #define MS5611_PRESSURE_OFFSET -3.37// Pressure offset calibration according to local air pressure (Pa)
@@ -54,4 +58,5 @@ class Altimeter : public Component{
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
     void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
     double calcAltitude();// Calculates altitude (m)
+    void start() override;
 };

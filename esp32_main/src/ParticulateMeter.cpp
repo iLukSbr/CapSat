@@ -33,13 +33,8 @@ ParticulateMeter::ParticulateMeter():
     #endif
     aqi(new Adafruit_PM25AQI())
 {// Create object
-    multiPrintln(F("Starting particulate meter..."));
     pmSerial->begin(SERIAL_BAUD_RATE);
-    while(!aqi->begin_UART(pmSerial)){
-        delay(CALIBRATION_DELAY);
-        multiPrintln(F("Waiting for particulate meter..."));
-    }
-    multiPrintln(F("Particulate meter OK!"));
+    start();
 }
 
 ParticulateMeter::~ParticulateMeter(){// Release memory
@@ -48,7 +43,7 @@ ParticulateMeter::~ParticulateMeter(){// Release memory
 }
 
 void ParticulateMeter::gatherData(){// Get data from component
-    multiPrintln(F("Gathering particulate meter data..."));
+    multiPrintln(F("Gathering particulate meter PMSA003 data..."));
     PM25_AQI_Data data;
     if(aqi->read(&data)){
         // "Less than" particle concentrations at sea level pressure
@@ -72,7 +67,7 @@ void ParticulateMeter::gatherData(){// Get data from component
 }
 
 void ParticulateMeter::printData(){// Display data for test
-    multiPrint(F("Particulate meter: "));
+    multiPrint(F("Particulate meter PMSA003: "));
     for(uint8_t i=0; i<PM_SIZE; i++){
         multiPrint(particulate_meter_data[i]);
         multiPrint(F(" "));
@@ -101,5 +96,18 @@ void ParticulateMeter::saveCSVToFile(SdFile* my_file){// Save data to MicroSD ca
     for(uint8_t i=0; i<PM_SIZE; i++){
         my_file->print(particulate_meter_data[i]);
         my_file->print(F(","));
+    }
+}
+
+void ParticulateMeter::start(){
+    multiPrintln(F("Starting particulate meter PMSA003..."));
+    for(byte i=0; i<START_TRIES; i++){
+        if(aqi->begin_UART(pmSerial)){
+            started = true;
+            multiPrintln(F("Particulate meter PMSA003 OK!"));
+            break;
+        }
+        delay(CALIBRATION_DELAY);
+        multiPrintln(F("Waiting for particulate meter PMSA003..."));
     }
 }

@@ -43,6 +43,10 @@ SOFTWARE.
 // https://github.com/PaulStoffregen/Time
 #include <TimeLib.h>
 
+#ifndef GPS
+  #define GPS 1
+#endif
+
 #define ACTUAL_YEAR 2023// Date year validation
 #define UTC_OFFSET -3// UTC time zone
 #define UTC_GPS_TIME_DRIFT 19// GPS time delayed behind UTC (s)
@@ -88,4 +92,5 @@ class Gps : public Component{
     const uint8_t getSecond() const;// Second
     void gatherDateTime(const bool search);// Get date and time
     const bool isSignalAcquired() const;// Check if acquired GPS signal
+    void start() override;
 };

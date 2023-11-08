@@ -26,19 +26,15 @@ SOFTWARE.
 #include "MicroSDReaderWriter.h"
 
 MicroSDReaderWriter::MicroSDReaderWriter(const char* _datafileName):
+    started(false),
     sd(new SdFat()),// MicroSD card
     my_file(new SdFile())// File
 {// Create object
-    multiPrintln(F("Starting MicroSD..."));
     strcpy(datafileName, _datafileName);// Copy filename (date and hour)
     strcat(datafileName, FILE_EXTENSION);// Append file extension
     multiPrint(F("MicroSD filename: "));
     multiPrintln(datafileName);
-    while(!sd->begin(SD_CS_PIN, SPI_SIXTEENTH_SPEED)){
-        multiPrintln(F("Waiting for MicroSD... Try reinserting."));
-        delay(CALIBRATION_DELAY);
-    }
-    multiPrintln(F("MicroSD OK!"));
+    start();
 }
 
 MicroSDReaderWriter::~MicroSDReaderWriter(){// Release memory
@@ -46,12 +42,29 @@ MicroSDReaderWriter::~MicroSDReaderWriter(){// Release memory
     delete my_file;
 }
 
+bool MicroSDReaderWriter::isStarted() const{
+    return started;
+}
+
 SdFile* MicroSDReaderWriter::gatherData(){// Get data from component
-    multiPrintln(F("Gathering MicroSD data..."));
+    multiPrintln(F("Gathering MicroSD reader/writer data..."));
     if(my_file->open(datafileName, O_RDWR | O_CREAT | O_AT_END))
         return my_file;// Open file or create if not exists for read/write at the end
     else{
         multiPrintln(F("MicroSD card failed."));
         return nullptr;
+    }
+}
+
+void MicroSDReaderWriter::start(){
+    multiPrintln(F("Starting MicroSD reader/writer..."));
+    for(byte i=0; i<START_TRIES; i++){
+        if(sd->begin(SD_CS_PIN, SPI_SIXTEENTH_SPEED)){
+            started = true;
+            multiPrintln(F("MicroSD reader/writer OK!"));
+            break;
+        }
+        multiPrintln(F("Waiting for MicroSD card... Try reinserting."));
+        delay(CALIBRATION_DELAY);
     }
 }

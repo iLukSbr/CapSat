@@ -24,8 +24,9 @@ SOFTWARE.
 
 #pragma once
 
-#define CALIBRATION_DELAY 1000// Delay between calibration requests (ms)
+#define CALIBRATION_DELAY 10// Delay between calibration requests (ms)
 #define SERIAL_BAUD_RATE 115200// Serial baud rate
+#define START_TRIES 100
 #ifdef ESP32// For ESP32
   #define PIN_MAX_VOLTAGE 3.3
   #define PIN_MAX_ANALOG 4095

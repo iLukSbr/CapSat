@@ -33,6 +33,10 @@ SOFTWARE.
 // https://github.com/wollewald/INA219_WE
 #include <INA219_WE.h>// I²C adress 0x40
 
+#ifndef MULTIMETER
+  #define MULTIMETER 1
+#endif
+
 #define MULTIMETER_SIZE 3// Sensor data quantity
 #define SHUNT_RESISTANCE 0.01// Shunt resistance 10R = 0.01K
 #define BATTERY_KEY "bateria"// JSON battery key
@@ -52,4 +56,5 @@ class Multimeter : public Component{
     void printData() override;// Display data for test
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
     void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
+    void start() override;
 };

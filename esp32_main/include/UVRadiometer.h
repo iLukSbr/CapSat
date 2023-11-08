@@ -32,6 +32,10 @@ SOFTWARE.
 Analog output = 0 - 1 V independent from source
 */
 
+#ifndef UV_RADIOMETER
+  #define UV_RADIOMETER 1
+#endif
+
 #define UV_RADIOMETER_PIN 39// UV radiometer analog pin
 #define UV_KEY "UV"// JSON UV level key
 
@@ -46,4 +50,5 @@ class UVRadiometer : public Component{
     void printData() override;// Display data for test
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
     void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
+    void start() override;
 };

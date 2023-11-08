@@ -34,6 +34,10 @@ SOFTWARE.
 // https://github.com/wollewald/ADS1115_WE
 #include <ADS1115_WE.h>
 
+#ifndef GAS_METER
+  #define GAS_METER 1
+#endif
+
 #define ADC_I2C_ADDRESS 0x48// ADS1115 I²C address
 #define GAS_METER_SIZE 8// Sensor data quantity
 #define GAS_METER_KEY "gasometro"// JSON gas meter key
@@ -59,4 +63,5 @@ class GasMeter : public Component{
     void printData() override;// Display data for test
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
     void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
+    void start() override;
 };

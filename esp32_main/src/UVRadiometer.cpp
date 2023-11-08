@@ -28,9 +28,9 @@ SOFTWARE.
 UVRadiometer::UVRadiometer():
     uv_radiometer_data(0)
 {// Create object
-    multiPrintln(F("Starting UV radiometer..."));
+    multiPrintln(F("Starting UV radiometer Taidacent..."));
     pinMode(UV_RADIOMETER_PIN, INPUT);
-    multiPrintln(F("UV radiometer OK!"));
+    start();
 }
 
 UVRadiometer::~UVRadiometer(){// Release memory
@@ -38,7 +38,7 @@ UVRadiometer::~UVRadiometer(){// Release memory
 }
 
 void UVRadiometer::gatherData(){// Get data from component
-    multiPrintln(F("Gathering UV radiometer data..."));
+    multiPrintln(F("Gathering UV radiometer Taidacent data..."));
     double converted_voltage = 1000.f*analogRead(UV_RADIOMETER_PIN)*PIN_MAX_VOLTAGE/PIN_MAX_ANALOG;// Convert analog reading into voltage value
     if(converted_voltage <= 227)// According to voltage (0-1 V)
         uv_radiometer_data = 0;// UV index 0 (low)
@@ -67,7 +67,7 @@ void UVRadiometer::gatherData(){// Get data from component
 }
 
 void UVRadiometer::printData(){// Display data for test
-    multiPrint(F("UV radiometer: "));
+    multiPrint(F("UV radiometer Taidacent: "));
     multiPrint(uv_radiometer_data);
     multiPrintln();
 }
@@ -79,4 +79,9 @@ void UVRadiometer::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& p
 void UVRadiometer::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
     my_file->print(uv_radiometer_data);
     my_file->print(F(","));
+}
+
+void UVRadiometer::start(){
+    started = true;
+    multiPrintln(F("UV radiometer Taidacent OK!"));
 }

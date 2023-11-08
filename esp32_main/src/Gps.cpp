@@ -34,10 +34,8 @@ Gps::Gps():
       gpsSerial(new SoftwareSerial(GPS_RX_PIN, GPS_TX_PIN)) 
     #endif
 {// Create object
-    multiPrintln(F("Starting GPS..."));
     gpsSerial->begin(GPS_BAUD_RATE);// Serial baud rate
-    gatherDateTime(false);
-    multiPrintln(F("GPS OK!"));
+    start();
 }
 
 Gps::~Gps(){// Release memory
@@ -46,7 +44,7 @@ Gps::~Gps(){// Release memory
 }
 
 void Gps::gatherData(){// Get data from component
-    multiPrintln(F("Gathering GPS data..."));
+    multiPrintln(F("Gathering GPS NEO-M8N data..."));
     uint16_t i = 0;
     while(gpsSerial->available() > 0){
         if(gps->encode(gpsSerial->read())){// Getting data
@@ -72,7 +70,7 @@ void Gps::gatherData(){// Get data from component
 }
 
 void Gps::printData(){// Display data for test
-    multiPrint(F("GPS: "));
+    multiPrint(F("GPS NEO-M8N: "));
     uint8_t i;
     for(i=0; i<2; i++){
         multiPrint(gps_data[i], GPS_DECIMAL_PLACES);
@@ -136,19 +134,28 @@ void Gps::gatherDateTime(const bool search){// Get date and time, keep searching
     uint8_t i = 0;
     do{
         gatherData();
-        delay(CALIBRATION_DELAY);
         multiPrintln(F("Searching for GPS signal..."));
         i++;
-        if(i > 10 && !search){
+        if(i>START_TRIES && !search){
             multiPrintln(F("GPS signal not found, timeout!"));
             return;
         }
+        delay(CALIBRATION_DELAY);
     }while((!gps->date.isValid() || !gps->time.isValid()) || gps->date.year()>ACTUAL_YEAR);// Colecting date and time
+    if(!isStarted())
+        started = true;
     if(!signal_status)
         signal_status = true;
     setTime(gps->time.hour(), gps->time.minute(), gps->time.second() + UTC_GPS_TIME_DRIFT, gps->date.day(), gps->date.month(), gps->date.year());
     adjustTime(UTC_OFFSET*SECS_PER_HOUR);
     delay(CALIBRATION_DELAY);
+}
+
+void Gps::start(){
+    multiPrintln(F("Starting GPS NEO-M8N..."));
+    gatherDateTime(false);
+    if(isStarted())
+        multiPrintln(F("GPS NEO-M8N OK!"));
 }
 
 const bool Gps::isSignalAcquired() const{

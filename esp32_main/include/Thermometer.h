@@ -32,6 +32,10 @@ SOFTWARE.
 #include <NTC_Thermistor.h>
 #include <SmoothThermistor.h>
 
+#ifndef THERMOMETER
+  #define THERMOMETER
+#endif
+
 /*
 ESP: VIN = 3.3 V
 Analog output = 0 - 3.3 V
@@ -62,4 +66,5 @@ class Thermometer : public Component{
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
     void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
     const float getTemperature() const;// Return temperature (°C)
+    void start() override;
 };

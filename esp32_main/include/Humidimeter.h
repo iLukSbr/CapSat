@@ -35,8 +35,13 @@ SOFTWARE.
 #include <DFRobot_ENS160.h>// I²C address 0x53
 #include <AHTxx.h>// I²C address 0x38
 
-#define HUMIDIMETER_SIZE 4// Sensor data quantity
+#ifndef HUMIDIMETER
+  #define HUMIDIMETER 1
+#endif
+
+#define HUMIDIMETER_SIZE 5// Sensor data quantity
 #define HUMIDITY_KEY "umidade"// JSON humidity key
+#define TEMPERATURE_KEY "temperatura"// JSON temperature key
 #define TVOC_KEY "TCOV"// JSON Total Volatile Organic Compounds (TVOC) key
 #define CO2_KEY "CO2"// JSON CO2 key
 #define AQI_KEY "IQA"// JSON Air Quality Index (AQI) key
@@ -55,4 +60,6 @@ class Humidimeter : public Component{
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
     void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
     const float getHumidity() const;// Return humidity (%)
+    const float getTemperature() const;// Return temperature (°C)
+    void start() override;
 };

@@ -28,12 +28,12 @@ SOFTWARE.
 Magnetometer::Magnetometer():
     compass(new QMC5883LCompass())// Instantiate compass
 {// Create object
-    multiPrintln(F("Starting magnetometer..."));
+    multiPrintln(F("Starting magnetometer QMC5883L..."));
     compass->setADDR(MAGNETOMETER_I2C_ADDRESS);
     compass->init();// Calibrate moving throug an 8 pattern on a flat surface
     compass->setMode(MAGNETOMETER_MODE, MAGNETOMETER_ODR, MAGNETOMETER_RNG, MAGNETOMETER_OSR);
     compass->setSmoothing(MAGNETOMETER_SMOOTHING_STEPS, MAGNETOMETER_ADVANCED_SMOOTHING);
-    multiPrintln(F("Magnetometer OK!"));
+    start();
 }
 
 Magnetometer::~Magnetometer(){// Release memory
@@ -41,7 +41,7 @@ Magnetometer::~Magnetometer(){// Release memory
 }
 
 void Magnetometer::gatherData(){// Get data from component
-    multiPrintln(F("Gathering magnetometer data..."));
+    multiPrintln(F("Gathering magnetometer QMC5883L data..."));
     compass->read();
 	magnetometer_data[0] = compass->getX();// X
 	magnetometer_data[1] = compass->getY();// Y
@@ -53,7 +53,7 @@ void Magnetometer::gatherData(){// Get data from component
 }
 
 void Magnetometer::printData(){// Display data for test
-    multiPrint(F("Magnetometer: "));
+    multiPrint(F("Magnetometer QMC5883L: "));
     for(uint8_t i=0; i<MAGNETOMETER_SIZE; i++){
         multiPrint(magnetometer_data[i]);
         multiPrint(F(" "));
@@ -78,4 +78,9 @@ void Magnetometer::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
     }
     my_file->print(magnetometer_direction);
     my_file->print(F(","));
+}
+
+void Magnetometer::start(){
+    multiPrintln(F("Magnetometer QMC5883L OK!"));
+    started = true;
 }

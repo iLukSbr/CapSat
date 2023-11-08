@@ -29,25 +29,16 @@ RTClock::RTClock(const uint16_t& year, const uint8_t& month, const uint8_t& day,
     rtc(new RTC_DS3231()),// Instatiate RTC
     day_of_the_week(nullptr)
 {// Create object
-    multiPrintln(F("Starting RTC..."));
-    while(!rtc->begin()){
-        multiPrintln(F("Waiting for RTC..."));
-        delay(CALIBRATION_DELAY);
-    }
-    rtcAdjust(year, month, day, hour, minute, second);
-    multiPrintln(F("RTClock OK!"));
+    start();
+    if(isStarted())
+        rtcAdjust(year, month, day, hour, minute, second);
 }
 
 RTClock::RTClock():
     rtc(new RTC_DS3231()),// Instatiate RTC
     day_of_the_week(nullptr)
 {// Create object
-    multiPrintln(F("Starting RTC..."));
-    while(!rtc->begin()){
-        multiPrintln(F("Waiting for RTC..."));
-        delay(CALIBRATION_DELAY);
-    }
-    multiPrintln(F("RTClock OK!"));
+    start();
 }
 
 RTClock::~RTClock(){// Release memory
@@ -55,7 +46,7 @@ RTClock::~RTClock(){// Release memory
 }
 
 void RTClock::gatherData(){// Get data from component
-    multiPrintln(F("Gathering RTClock data..."));
+    multiPrintln(F("Gathering RTClock DS3231 data..."));
     DateTime now = rtc->now();// Get real time
     day_of_the_week = days[now.dayOfTheWeek()];
     snprintf_P(clock_data,
@@ -70,7 +61,7 @@ void RTClock::gatherData(){// Get data from component
 }
 
 void RTClock::printData(){// Display data for test
-    multiPrint(F("RTClock: "));
+    multiPrint(F("RTClock DS3231: "));
     multiPrint(clock_data);
     multiPrintln();
 }
@@ -100,4 +91,18 @@ bool RTClock::checkValidDate(const uint16_t& minute){// Check if date is valid
 
 void RTClock::rtcAdjust(const uint16_t& year, const uint8_t& month, const uint8_t& day, const uint8_t& hour, const uint8_t& minute, const uint8_t& second){
     rtc->adjust(DateTime(year, month, day, hour, minute, second));
+}
+
+void RTClock::start(){
+    Serial.println(F("Starting RTC DS3231..."));
+    for(byte i=0; i<START_TRIES; i++){
+        if(rtc->begin()){
+            rtc->adjust(DateTime(F(__DATE__), F(__TIME__)));
+            started = true;
+            Serial.println(F("RTClock DS3231 OK!"));
+            break;
+        }
+        Serial.println(F("Waiting for RTC DS3231..."));
+        delay(CALIBRATION_DELAY);
+    }
 }

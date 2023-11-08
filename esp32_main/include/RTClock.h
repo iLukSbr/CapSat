@@ -32,6 +32,10 @@ SOFTWARE.
 
 #include "Gps.h"
 
+#ifndef RTCLOCK
+  #define RTCLOCK
+#endif
+
 #define RTCLOCK_SIZE 21// Date and time string length
 #define DATE_TIME_KEY "id"// JSON date and time key
 #define DAY_OF_THE_WEEK_KEY "dia da semana"// JSON day of the week key
@@ -60,4 +64,5 @@ class RTClock : public Component{
     char* getDateTime();// Date and time
     bool checkValidDate(const uint16_t& minute);// If date is valid
     void rtcAdjust(const uint16_t& year, const uint8_t& month, const uint8_t& day, const uint8_t& hour, const uint8_t& minute, const uint8_t& second);
+    void start() override;
 };

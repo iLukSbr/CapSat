@@ -24,6 +24,10 @@ SOFTWARE.
 
 #include "Component.h"
 
+#ifndef ESP32_CAMERA
+  #define ESP32_CAMERA 1
+#endif
+
 #if defined(ESP32) || defined(ESP8266)// For ESP
   // UART hardware interface
   #include <driver/uart.h>
@@ -56,4 +60,5 @@ class ESP32Camera : public Component{
         void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload);// Create JSON entries
         void saveCSVToFile(SdFile* my_file);// Save data to MicroSD card
         void takePicture();// Request to take a picture
+        void start() override;
 };

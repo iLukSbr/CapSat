@@ -43,7 +43,7 @@ SOFTWARE.
 
 #include <Arduino.h>// Arduino compatibility
 
-/* Multitasking */
+// Multitasking
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/semphr.h>
@@ -73,61 +73,16 @@ SOFTWARE.
   #include <WebSerial.h>
 #endif
 
-// Messages
-#include "Message.h"
-
-/* === UART Interface === */
-// ESP32-CAM
-#include "ESP32Camera.h"
-
-// PMSA003 particulate meter
-#include "ParticulateMeter.h"
-
-// NEO-M8N GPS
-#include "Gps.h"
-
-/* === ThreeWire Interface === */
-// DS3231 RTC
-#include "RTClock.h"
-
-/* === I²C Interface === */
-// MPU-9250 accelerometer/gyroscope
-#include "Accelerometer.h"
-
-// MS5611 altimeter/barometer
-#include "Altimeter.h"
-
-// QMC5883L magnetometer
-#include "Magnetometer.h"
-
-// ENS160+AHT21 carbodioximeter, TVOC meter and humidimeter
-#include "Humidimeter.h"
-
-// INA219 multimeter
-#include "Multimeter.h"
-
-/* === Analog Interface === */
-// MiCS-6814 gas meter
-#include "GasMeter.h"
-
-// MQ-131 ozonoscope
-#include "Ozonoscope.h"
-
-// NTC thermometer
-#include "Thermometer.h"
-
-// Rain sensor
-#include "Rainmeter.h"
-
-// Taidacent UV level sensor
-#include "UVRadiometer.h"
+#include "Message.h"// Messages
+#include "componentInclude.h"// Components
 
 /* === Constant values === */
 #define TEAM_ID 99// Team ID number
-#define GATHER_DELAY 10000// Sensors data gathering delay (ms)
+#define SAVE_DELAY 60000// Sensors data saving delay (ms)
 #define HTTP_SENDING_DELAY 240000// HTTP sending delay (ms)
-#define COMPONENTS_VECTOR_SIZE 14// Components quantity inside vector
-#define SWITCH_PIN 32// On/off switch pin
+#ifndef _RELAY
+  #define SWITCH_PIN 32// On/off switch pin
+#endif
 
 /* === Strings === */
 #define WIFI_SSID "OBSAT_WIFI"// WiFi SSID
@@ -140,33 +95,63 @@ SOFTWARE.
 unsigned long stopwatch_sensors = 0;// Stopwatch for timed sensor reading
 
 // Initial configuration
-Gps* m8n;
-MicroSDReaderWriter* microsd;
-RTClock* ds3231;
+#ifndef _GPS
+  Gps* m8n;
+#endif
+#ifndef _MICROSD_READER_WRITER
+  MicroSDReaderWriter* microsd;
+#endif
+#ifndef _RTCLOCK
+  RTClock* ds3231;
+#endif
 
 // I²C
-Accelerometer* mpu9250;
-Altimeter* ms5611;
-Humidimeter* ens160aht21;
-Magnetometer* qmc5883l;
-Multimeter* ina219;
+#ifndef _ACCELEROMETER
+  Accelerometer* mpu9250;
+#endif
+#ifndef _ALTIMETER
+  Altimeter* ms5611;
+#endif
+#ifndef _HUMIDIMETER
+  Humidimeter* ens160aht21;
+#endif
+#ifndef _MAGNETOMETER
+  Magnetometer* qmc5883l;
+#endif
+#ifndef _MULTIMETER
+  Multimeter* ina219;
+#endif
 
 // UART
-ESP32Camera* esp32cam;
-ParticulateMeter* pmsa003;
+#ifndef _ESP32_CAMERA
+  ESP32Camera* esp32cam;
+#endif
+#ifndef _PARTICULATE_METER
+  ParticulateMeter* pmsa003;
+#endif
 
 // ADC I²C
-GasMeter* mics6814;
-Ozonoscope* mq131;
+#ifndef _GAS_METER
+  GasMeter* mics6814;
+#endif
+#ifndef _OZONOSCOPE
+  Ozonoscope* mq131;
+#endif
 
 //Analog
-Rainmeter* mhrd;
-Thermometer* ntc;
-UVRadiometer* taidacent;
+#ifndef _RAINMETER
+  Rainmeter* mhrd;
+#endif
+#ifndef _THERMOMETER
+  Thermometer* ntc;
+#endif
+#ifndef _UV_RADIOMETER
+  UVRadiometer* taidacent;
+#endif
 
 // Serial web server
 AsyncWebServer server(80);
-SemaphoreHandle_t xSerial_semaphore;
+
 // Messages
 Message msg;
 
@@ -176,35 +161,59 @@ Vector<Component*> component_list(storage_array);
 
 void pushAll(){
   // Initial configuration
-  component_list.push_back(dynamic_cast<Component*>(m8n = new Gps()));
-  delay(CALIBRATION_DELAY);
-  if(m8n->isSignalAcquired())
-    component_list.push_back(dynamic_cast<Component*>(ds3231 = new RTClock(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond())));
-  else
-    component_list.push_back(dynamic_cast<Component*>(ds3231 = new RTClock()));
-  delay(CALIBRATION_DELAY);
-  microsd = new MicroSDReaderWriter(ds3231->getDateTime());// SPI
+  #ifndef _GPS
+    component_list.push_back(dynamic_cast<Component*>(m8n = new Gps()));
+    delay(CALIBRATION_DELAY);
+    if(m8n->isSignalAcquired())
+      ds3231->rtcAdjust(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond());
+  #endif
+  #ifndef _MICROSD_READER_WRITER
+    microsd = new MicroSDReaderWriter(ds3231->getDateTime());// SPI
+  #endif
 
-  // Comment to disable device
   // UART
-  // component_list.push_back(dynamic_cast<Component*>(esp32cam = new ESP32Camera()));
-  component_list.push_back(dynamic_cast<Component*>(pmsa003 = new ParticulateMeter()));
+  #ifndef _ESP32_CAMERA
+    component_list.push_back(dynamic_cast<Component*>(esp32cam = new ESP32Camera()));
+  #endif
+  #ifndef _PARTICULATE_METER
+    component_list.push_back(dynamic_cast<Component*>(pmsa003 = new ParticulateMeter()));
+  #endif
 
   // I²C
-  component_list.push_back(dynamic_cast<Component*>(ens160aht21 = new Humidimeter()));
-  component_list.push_back(dynamic_cast<Component*>(ina219 = new Multimeter()));
-  component_list.push_back(dynamic_cast<Component*>(mpu9250 = new Accelerometer()));
-  component_list.push_back(dynamic_cast<Component*>(ms5611 = new Altimeter()));
-  component_list.push_back(dynamic_cast<Component*>(qmc5883l = new Magnetometer()));
+  #ifndef _HUMIDIMETER
+    component_list.push_back(dynamic_cast<Component*>(ens160aht21 = new Humidimeter()));
+  #endif
+  #ifndef _MULTIMETER
+    component_list.push_back(dynamic_cast<Component*>(ina219 = new Multimeter()));
+  #endif
+  #ifndef _ACCELEROMETER
+    component_list.push_back(dynamic_cast<Component*>(mpu9250 = new Accelerometer()));
+  #endif
+  #ifndef _ALTIMETER
+    component_list.push_back(dynamic_cast<Component*>(ms5611 = new Altimeter()));
+  #endif
+  #ifndef _MAGNETOMETER
+    component_list.push_back(dynamic_cast<Component*>(qmc5883l = new Magnetometer()));
+  #endif
   
   // ADC I²C
-  component_list.push_back(dynamic_cast<Component*>(mics6814 = new GasMeter()));
-  component_list.push_back(dynamic_cast<Component*>(mq131 = new Ozonoscope()));
+  #ifndef _GAS_METER
+    component_list.push_back(dynamic_cast<Component*>(mics6814 = new GasMeter()));
+  #endif
+  #ifndef _OZONOSCOPE
+    component_list.push_back(dynamic_cast<Component*>(mq131 = new Ozonoscope()));
+  #endif
 
   // Analog
-  component_list.push_back(dynamic_cast<Component*>(mhrd = new Rainmeter()));
-  component_list.push_back(dynamic_cast<Component*>(ntc = new Thermometer()));
-  component_list.push_back(dynamic_cast<Component*>(taidacent = new UVRadiometer()));
+  #ifndef _RAINMETER
+    component_list.push_back(dynamic_cast<Component*>(mhrd = new Rainmeter()));
+  #endif
+  #ifndef _THERMOMETER
+    component_list.push_back(dynamic_cast<Component*>(ntc = new Thermometer()));
+  #endif
+  #ifndef _UV_RADIOMETER
+    component_list.push_back(dynamic_cast<Component*>(taidacent = new UVRadiometer()));
+  #endif
 }
 
 /* === Components start and calibration === */
@@ -228,11 +237,17 @@ void pushAll(){
   }
 #endif
 
-void calibrateMQ131(){
-  ens160aht21->gatherData();
-  ntc->gatherData();
-  mq131->setClimateParameters(ntc->getTemperature(), ens160aht21->getHumidity());
-}
+#ifndef _OZONOSCOPE
+  void calibrateMQ131(){
+    #ifndef _THERMOMETER
+      ntc->gatherData();
+      mq131->setClimateParameters(ntc->getTemperature(), ens160aht21->getHumidity());
+    #elif !defined(_HUMIDIMETER)
+      ens160aht21->gatherData();
+      mq131->setClimateParameters(ens160aht21->getTemperature(), ens160aht21->getHumidity());
+    #endif
+  }
+#endif
 
 void beginAll(){
   #if defined(ESP32) || defined(ESP8266)// For ESP
@@ -244,15 +259,24 @@ void beginAll(){
 
 /* === Gather components data === */
 void gatherDataAll(){
-  calibrateMQ131();
-  for(auto element : component_list)
-    element->gatherData();
+  #ifndef _OZONOSCOPE
+    calibrateMQ131();
+  #endif
+  for(auto element : component_list){
+    if(element->isStarted())
+      if(element->isInTime())
+        element->gatherData();
+    else
+      element->start();
+  }
 }
 
 /* === Display gathered data === */
 void printAll(){
-  for(auto element : component_list)
-    element->printData();
+  for(auto element : component_list){
+    if(element->isStarted())
+      element->printData();
+  }
   msg.multiPrintln();
 }
 
@@ -261,33 +285,47 @@ String makeJSONAll(const bool& isHTTP){
   StaticJsonDocument<1000> doc;
   JsonObject payload = doc.createNestedObject(F(PAYLOAD_KEY));
   doc[F(TEAM_KEY)] = TEAM_ID;
-  for(auto element : component_list)
-    element->makeJSON(isHTTP, doc, payload);
+  for(auto element : component_list){
+    if(element->isStarted())
+      element->makeJSON(isHTTP, doc, payload);
+  }
   String doc_serialized;
   serializeJson(doc, doc_serialized);
   return doc_serialized;
 }
 
-void saveCSVToFileAll(){
-  SdFile* my_file = microsd->gatherData();// Open file to save into MicroSD card
-  if(my_file){
-    for(auto element : component_list)
-      element->saveCSVToFile(my_file);// Save .csv
-    my_file->println();// Descend one line
-    my_file->close();// Close file
+#ifndef _MICROSD_READER_WRITER
+  void saveCSVToFileAll(){
+    if(microsd->isStarted()){
+      SdFile* my_file = microsd->gatherData();// Open file to save into MicroSD card
+      if(my_file){
+        for(auto element : component_list){
+          if(element->isStarted())
+            element->saveCSVToFile(my_file);// Save .csv
+        }
+        my_file->println();// Descend one line
+        my_file->close();// Close file
+      }
+    }
+    else
+      microsd->start();
   }
-}
 
-void saveJSONToFileAll(const String& doc_serialized){
-  SdFile* my_file = microsd->gatherData();// Open file to save into MicroSD card
-  if(my_file){
-    my_file->println(doc_serialized);// Write JSON
-    my_file->println();// Descend one line
-    my_file->close();// Close file
+  void saveJSONToFileAll(const String& doc_serialized){
+    if(microsd->isStarted()){
+      SdFile* my_file = microsd->gatherData();// Open file to save into MicroSD card
+      if(my_file){
+        my_file->println(doc_serialized);// Write JSON
+        my_file->println();// Descend one line
+        my_file->close();// Close file
+      }
+      msg.multiPrint(F("JSON saved: "));
+      msg.multiPrintln(doc_serialized);
+    }
+    else
+      microsd->start();
   }
-  msg.multiPrint(F("JSON saved: "));
-  msg.multiPrintln(doc_serialized);
-}
+#endif
 
 /* === Send JSON data to server by HTTP POST === */
 #if defined(ESP32) || defined(ESP8266)// For ESP
@@ -313,17 +351,19 @@ void saveJSONToFileAll(const String& doc_serialized){
   unsigned long stopwatch_http = 0;// Stopwatch for timed data sending
 #endif
 
-void powerOn3V3(){
-  pinMode(SWITCH_PIN, OUTPUT);
-  digitalWrite(SWITCH_PIN, HIGH);
-  msg.multiPrintln(F("3V3 line ON!"));
-}
+#ifndef _RELAY
+  void powerOn3V3(){
+    pinMode(SWITCH_PIN, OUTPUT);
+    digitalWrite(SWITCH_PIN, HIGH);
+    msg.multiPrintln(F("3V3 line ON!"));
+  }
 
-void powerOff3V3(){
-  pinMode(SWITCH_PIN, OUTPUT);
-  digitalWrite(SWITCH_PIN, LOW);
-  msg.multiPrintln(F("3V3 line OFF!"));
-}
+  void powerOff3V3(){
+    pinMode(SWITCH_PIN, OUTPUT);
+    digitalWrite(SWITCH_PIN, LOW);
+    msg.multiPrintln(F("3V3 line OFF!"));
+  }
+#endif
 
 void deleteAll(){
   for(auto element : component_list)
@@ -333,35 +373,41 @@ void deleteAll(){
 
 /* === Start configuration === */
 void setup(){
-  // powerOn3V3();
   Serial.begin(SERIAL_BAUD_RATE);
   while(!Serial);
-  Serial.println(F("ESP32 started!"));
-  delay(CALIBRATION_DELAY);
+  #ifndef _RELAY
+    powerOn3V3();
+  #endif
+  #ifndef _RTCLOCK
+    component_list.push_back(dynamic_cast<Component*>(ds3231 = new RTClock()));
+  #endif
+  Serial.println(F("ESP32 DevKitC started!"));
   beginAll();
-  delay(CALIBRATION_DELAY);
 }
 
 /* === Data gathering loop === */
 void loop(){
-  if(millis() - stopwatch_sensors > GATHER_DELAY || !stopwatch_sensors){
-    msg.multiPrint(F("Running time of last data gathered: "));
+  gatherDataAll();
+  if(millis() - stopwatch_sensors > SAVE_DELAY || !stopwatch_sensors || millis()<stopwatch_sensors){
+    msg.multiPrint(F("Running time of last data saved: "));
     msg.multiPrintln(stopwatch_sensors);
     stopwatch_sensors = millis();
-    gatherDataAll();
-    #ifdef JSON_FORMAT
-      saveJSONToFileAll(makeJSONAll(false));
-    #else
-      saveCSVToFileAll();
+    #ifndef _MICROSD_READER_WRITER
+      #ifdef JSON_FORMAT
+        saveJSONToFileAll(makeJSONAll(false));
+      #else
+        saveCSVToFileAll();
+      #endif
     #endif
     printAll();
     #if defined(ESP32) || defined(ESP8266)// For ESP
-      msg.multiPrint(F("Running time of last JSON sent: "));
-      msg.multiPrintln(stopwatch_http);
       if(millis() - stopwatch_http >= HTTP_SENDING_DELAY || !stopwatch_http){
+        msg.multiPrint(F("Running time of last JSON sent: "));
+        msg.multiPrintln(stopwatch_http);
         sendJSONToServerAll(makeJSONAll(true));
         stopwatch_http = millis();
       }
     #endif
   }
+  delay(CALIBRATION_DELAY);
 }

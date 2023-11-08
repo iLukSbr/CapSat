@@ -50,14 +50,6 @@ class Message{// Print to Serial and WebSerial
             delay(MSG_DELAY);
         }
 
-        template<typename T, typename U> void multiPrint(T msg, U places){
-            Serial.print(msg, places);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.print(msg, places);
-            #endif
-            delay(MSG_DELAY);
-        }
-
         template<typename T> void multiPrint(T msg){
             Serial.print(msg);
             #if defined(ESP32) || defined(ESP8266)
@@ -66,6 +58,14 @@ class Message{// Print to Serial and WebSerial
             delay(MSG_DELAY);
         }
 
+        template<typename T, typename U> void multiPrint(T msg, U places){
+            Serial.print(msg, places);
+            #if defined(ESP32) || defined(ESP8266)
+                WebSerial.print(msg, places);
+            #endif
+            delay(MSG_DELAY);
+        }
+        
         void multiPrintln(){
             Serial.println();
             #if defined(ESP32) || defined(ESP8266)

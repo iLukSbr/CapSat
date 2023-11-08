@@ -28,9 +28,8 @@ SOFTWARE.
 Rainmeter::Rainmeter():
     rainmeter_data(0)
 {// Create object
-    multiPrintln(F("Starting rainmeter..."));
     pinMode(RAINMETER_PIN, INPUT);// Defines RAINMETER_PIN as input
-    multiPrintln(F("Rainmeter OK!"));
+    start();
 }
 
 Rainmeter::~Rainmeter(){// Release memory
@@ -38,12 +37,12 @@ Rainmeter::~Rainmeter(){// Release memory
 }
 
 void Rainmeter::gatherData(){// Get data from component
-    multiPrintln(F("Gathering rainmeter data..."));
+    multiPrintln(F("Gathering rainmeter MH-RD data..."));
     digitalRead(RAINMETER_PIN) == HIGH ? rainmeter_data=0 : rainmeter_data=1;// HIGH, 0 = dry; LOW, 1 = wet
 }
 
 void Rainmeter::printData(){// Display data for test
-    multiPrint(F("Rainmeter: "));
+    multiPrint(F("Rainmeter MH-RD: "));
     multiPrint(rainmeter_data);
     multiPrintln();
 }
@@ -55,4 +54,10 @@ void Rainmeter::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payl
 void Rainmeter::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
     my_file->print(rainmeter_data);
     my_file->print(F(","));
+}
+
+void Rainmeter::start(){
+    multiPrintln(F("Starting rainmeter MH-RD..."));
+    started = true;
+    multiPrintln(F("Rainmeter MH-RD OK!"));
 }

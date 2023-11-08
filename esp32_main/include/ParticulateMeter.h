@@ -40,6 +40,10 @@ SOFTWARE.
   #include <SoftwareSerial.h>
 #endif
 
+#ifndef PARTICULATE_METER
+  #define PARTICULATE_METER 1
+#endif
+
 #define PM_SIZE 12// Sensor data quantity
 #define PML1L_KEY "PM1"// JSON PM1 (<1 micrometer diameter) at local pressure key
 #define PML2_5L_KEY "PM2.5"// JSON PM2.5 (<2,5 micrometer diameter) at local pressure key
@@ -76,4 +80,5 @@ class ParticulateMeter : public Component{
     void printData() override;// Display data for test
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
     void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
+    void start() override;
 };

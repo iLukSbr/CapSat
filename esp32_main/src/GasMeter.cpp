@@ -28,14 +28,9 @@ SOFTWARE.
 GasMeter::GasMeter():
     adc(new ADS1115_WE(ADC_I2C_ADDRESS))
 {// Create object
-    multiPrintln(F("Starting gas meter..."));
     gas = new MICS6814(ADS1115_COMP_1_GND, ADS1115_COMP_2_GND, ADS1115_COMP_3_GND, adc);
     gas->calibrate();
-    while(!adc->init()){
-        multiPrintln(F("Waiting for gas meter ADC..."));
-        delay(CALIBRATION_DELAY);
-    }
-    multiPrintln(F("Gas meter OK!"));
+    start();
 }
 
 GasMeter::~GasMeter(){// Release memory
@@ -44,7 +39,7 @@ GasMeter::~GasMeter(){// Release memory
 }
 
 void GasMeter::gatherData(){// Get data from component
-    multiPrintln(F("Gathering gas meter data..."));
+    multiPrintln(F("Gathering gas meter MiCS-6814 data..."));
     gas_meter_data[0] = 1000.f*gas->measure(NH3);// Ammonia concentration in air (ppb)
     gas_meter_data[1] = 1000.f*gas->measure(CO);// Carbon monoxide concentration in air (ppb)
     gas_meter_data[2] = 1000.f*gas->measure(NO2);// Nitrogen dioxide concentration in air (ppb)
@@ -59,7 +54,7 @@ void GasMeter::gatherData(){// Get data from component
 }
 
 void GasMeter::printData(){// Display data for test
-    multiPrint(F("Gas meter: "));
+    multiPrint(F("Gas meter MiCS-6814: "));
     for(uint8_t i=0; i<GAS_METER_SIZE; i++){
         multiPrint(gas_meter_data[i]);
         multiPrint(F(" "));
@@ -82,5 +77,18 @@ void GasMeter::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
     for(uint8_t i=0; i<GAS_METER_SIZE; i++){
         my_file->print(gas_meter_data[i]);
         my_file->print(F(","));
+    }
+}
+
+void GasMeter::start(){
+    multiPrintln(F("Starting gas meter MiCS-6814..."));
+    for(byte i=0; i<START_TRIES; i++){
+        if(adc->init()){
+            started = true;
+            multiPrintln(F("Gas meter MiCS-6814 OK!"));
+            break;
+        }
+        multiPrintln(F("Waiting for gas meter ADC ADS1115..."));
+        delay(CALIBRATION_DELAY);
     }
 }

@@ -26,6 +26,10 @@ SOFTWARE.
 
 #include "Component.h"
 
+#ifndef RAINMETER
+  #define RAINMETER 1
+#endif
+
 /*
 Digital output = 1 - 3 V independent from source
 */
@@ -45,4 +49,5 @@ class Rainmeter : public Component{
     void printData() override;// Display data for test
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
     void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
+    void start() override;
 };

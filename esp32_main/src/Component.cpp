@@ -25,7 +25,11 @@ SOFTWARE.
 #include "pch.h"
 #include "Component.h"
 
-Component::Component(){// Create object
+Component::Component():
+    started(false),
+    stopwatch(0),
+    reading_delay(10000)// Default reading delay 10 seconds
+{// Create object
 
 }
 
@@ -33,6 +37,17 @@ Component::~Component(){// Release memory
 
 }
 
-float Component::round3(const float value){// Roud value to 3 decimal places
+bool Component::isInTime() const{// Check if it is time to read the sensor
+    if(millis() - stopwatch >= reading_delay || !stopwatch || millis()<stopwatch)
+        return true;
+    else
+        return false;
+}
+
+bool Component::isStarted() const{// Check if the component was started properly
+    return started;
+}
+
+float Component::round3(const float value){// Round value to 3 decimal places
     return round(1000.f*value)/1000.f;
 }

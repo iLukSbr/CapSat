@@ -33,6 +33,10 @@ SOFTWARE.
 // https://github.com/mprograms/QMC5883LCompass
 #include <QMC5883LCompass.h>// I²C address 0x0D
 
+#ifndef MAGNETOMETER
+  #define MAGNETOMETER 1
+#endif
+
 #define MAGNETOMETER_KEY "magnetometro"// JSON magnetometer key
 #define MAGNETOMETER_DIRECTION_SIZE 4// Direction string length
 #define MAGNETOMETER_SIZE 5// Sensor data quantity
@@ -60,4 +64,5 @@ class Magnetometer : public Component{
     void printData() override;// Display data for test
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
     void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
+    void start() override;
 };

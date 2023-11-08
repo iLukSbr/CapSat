@@ -28,15 +28,7 @@ SOFTWARE.
 Altimeter::Altimeter():
     baro(new MS5611(MS5611_I2C_ADDRESS))// Instantiate sensor
 {// Create object
-    multiPrintln(F("Starting altimeter..."));
-    while(!baro->begin()){
-        delay(CALIBRATION_DELAY);
-        multiPrintln(F("Waiting for altimeter..."));
-    }
-    baro->setPressureOffset(MS5611_PRESSURE_OFFSET);// Calibrate according to local air pressure (Pa)
-    baro->setOversampling(OSR_ULTRA_HIGH);// 4096 oversampling (0.012 mbar resolution)
-    baro->reset(1);// Correct sensor that gives pressure/2
-    multiPrintln(F("Altimeter OK!"));
+    start();
 }
 
 Altimeter::~Altimeter(){// Release memory
@@ -69,6 +61,22 @@ void Altimeter::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
     for(uint8_t i=0; i<ALTIMETER_SIZE; i++){
         my_file->print(altimeter_data[i]);
         my_file->print(F(","));
+    }
+}
+
+void Altimeter::start(){
+    multiPrintln(F("Starting altimeter/barometer MS5611-01BA03..."));
+    for(byte i=0; i<START_TRIES; i++){
+        if(baro->begin()){
+            baro->setPressureOffset(MS5611_PRESSURE_OFFSET);// Calibrate according to local air pressure (Pa)
+            baro->setOversampling(OSR_ULTRA_HIGH);// 4096 oversampling (0.012 mbar resolution)
+            baro->reset(1);// Correct sensor that gives pressure/2
+            started = true;
+            multiPrintln(F("Altimeter/barometer MS5611-01BA03 OK!"));
+            break;
+        }
+        multiPrintln(F("Waiting for altimeter/barometer MS5611-01BA03..."));
+        delay(CALIBRATION_DELAY);
     }
 }
 

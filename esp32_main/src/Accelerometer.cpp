@@ -30,17 +30,8 @@ Accelerometer::Accelerometer():
     ACCELEROMETER_KEY(F("acelerometro")),
     GYROSCOPE_KEY(F("giroscopio"))
 {// Create object
-    multiPrintln(F("Starting accelerometer..."));
     imu->Config(&Wire, bfs::Mpu6500::I2C_ADDR_SEC);// I²C address 0x69
-    while(!imu->Begin()){// Waiting for sensor communication
-        delay(CALIBRATION_DELAY);
-        multiPrintln(F("Waiting for accelerometer..."));
-    }
-    while(!imu->ConfigSrd(ACCELEROMETER_SAMPLE_RATE_DIVIDER)){// Set the sample rate divider
-        delay(CALIBRATION_DELAY);// Calibrate moving through an 8 pattern on a flat surface
-        multiPrintln(F("Waiting for gyroscope..."));
-    }
-    multiPrintln(F("Accelerometer OK!"));
+    start();
 }
 
 Accelerometer::~Accelerometer(){
@@ -48,7 +39,7 @@ Accelerometer::~Accelerometer(){
 }
 
 void Accelerometer::gatherData(){// Get data from component
-    multiPrintln(F("Gathering accelerometer data..."));
+    multiPrintln(F("Gathering accelerometer/gyroscope MPU-6050 data..."));
     if(imu->Read()){// If something was received
         // Accelerometer
         accelerometer_data[0] = imu->accel_x_mps2();// X axis
@@ -63,7 +54,7 @@ void Accelerometer::gatherData(){// Get data from component
 }
 
 void Accelerometer::printData(){// Display data for test
-    multiPrint(F("Accelerometer/gyroscope: "));
+    multiPrint(F("Accelerometer/gyroscope MPU-6050: "));
     for(uint8_t i=0; i<ACCELEROMETER_SIZE; i++){
         multiPrint(accelerometer_data[i]);
         multiPrint(F(" "));
@@ -83,5 +74,24 @@ void Accelerometer::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
     for(uint8_t i=0; i<ACCELEROMETER_SIZE; i++){
         my_file->print(accelerometer_data[i]);
         my_file->print(F(","));
+    }
+}
+
+void Accelerometer::start(){
+    multiPrintln(F("Starting accelerometer/gyroscope MPU-6050..."));
+    for(byte i=0; i<START_TRIES; i++){// Waiting for sensor communication
+        if(imu->Begin()){// Set the sample rate divider
+            for(byte j=0; j<START_TRIES; j++){
+                if(imu->ConfigSrd(ACCELEROMETER_SAMPLE_RATE_DIVIDER)){
+                    started = true;
+                    multiPrintln(F("Accelerometer/gyroscope MPU-6050 OK!"));
+                    break;
+                }
+            }
+            if(isStarted())
+                break;
+        }
+        multiPrintln(F("Waiting for accelerometer/gyroscope MPU-6050..."));
+        delay(CALIBRATION_DELAY);
     }
 }

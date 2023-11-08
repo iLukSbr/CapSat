@@ -31,6 +31,11 @@ SOFTWARE.
 
 // General
 class Component : public Message{
+  protected:
+    bool started;
+    unsigned long stopwatch;
+    unsigned long reading_delay;
+
   public:
     Component();// Create object
     virtual ~Component();// Release memory
@@ -38,5 +43,8 @@ class Component : public Message{
     virtual void printData() = 0;// Display data for test
     virtual void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) = 0;// Create JSON entries
     virtual void saveCSVToFile(SdFile* my_file) = 0;// Save data to MicroSD card
-    float round3(const float value);
+    virtual void start() = 0;// Start component
+    bool isInTime() const;// Check if it is time to read the sensor
+    bool isStarted() const;// Check if the component was started properly
+    float round3(const float value);// Round value to 3 decimal places
 };

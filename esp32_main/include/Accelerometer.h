@@ -33,6 +33,10 @@ SOFTWARE.
 // https://github.com/bolderflight/invensense-imu
 #include <mpu6500.h>// I²C address 0x69 (AD0 HIGH to avoid conflict with RTC)
 
+#ifndef ACCELEROMETER
+  #define ACCELEROMETER 1
+#endif
+
 #define ACCELEROMETER_SIZE 6// Sensor data quantity
 #define ACCELEROMETER_SAMPLE_RATE_DIVIDER 19// MPU-9250 sample rate divider
 
@@ -50,4 +54,5 @@ class Accelerometer : public Component{
     void printData() override;// Display data for test
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries
     void saveCSVToFile(SdFile* my_file) override;// Save data to MicroSD card
+    void start() override;
 };
