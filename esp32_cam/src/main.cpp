@@ -94,7 +94,7 @@ SOFTWARE.
 
 /* === Camera definitions === */
 #define HZ_CLK_FREQ 16500000
-#define EEPROM_SIZE 8// Define the number of bytes you want to access
+#define EEPROM_SIZE 256// Define the number of bytes you want to access
 #define CAMERA_MODEL_AI_THINKER
 #include "camera_pins.h"// Camera models
 
@@ -251,9 +251,10 @@ void setup(){
 
 void loop(){
   // if(millis() - stopwatch >= DEFAULT_PICTURE_DELAY || !stopwatch){
+    byte i = 0;
+    unsigned short picture_number = 0;
     msg.multiPrint(F("Web picture path: "));
     msg.multiPrintln(path_web);
-    uint8_t i = 0;
     while(ov5640->getFWStatus() != FW_STATUS_S_FOCUSED){
         msg.multiPrintln(F("Focusing..."));
         delay(CALIBRATION_DELAY);
@@ -273,6 +274,16 @@ void loop(){
       }
     }
     stopwatch = millis();
+    i = 0;
+    do{
+        byte val = EEPROM.read(i);
+        if(val == 255)
+          i++;
+        else{
+          picture_number = val + 1;
+          break;
+        }
+    }while(i < EEPROM_SIZE);
     picture_number = EEPROM.read(0) + 1;
     String path = "/" + String(picture_number) + ".jpg";// Filename
     path_web = path;
@@ -294,7 +305,15 @@ void loop(){
     file.write(fb->buf, fb->len);// Payload (image), payload length
     delay(10*CALIBRATION_DELAY);
     file.close();
-    EEPROM.write(0, picture_number);
+    i = 0;
+    while(i<EEPROM_SIZE){
+      if(EEPROM.read(i) == 255)
+        i++;
+      else{
+        EEPROM.write(i, picture_number%256);
+        break;
+      }
+    }
     EEPROM.commit();
     esp_camera_fb_return(fb);
   // }
