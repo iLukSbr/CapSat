@@ -59,7 +59,7 @@ SdFile* MicroSDReaderWriter::gatherData(){// Get data from component
 void MicroSDReaderWriter::start(){
     multiPrintln(F("Starting MicroSD reader/writer..."));
     for(byte i=0; i<START_TRIES; i++){
-        if(sd->begin(SD_CS_PIN, SPI_SIXTEENTH_SPEED)){
+        if(sd->begin(SD_CS_PIN, 115200)){
             started = true;
             multiPrintln(F("MicroSD reader/writer OK!"));
             break;

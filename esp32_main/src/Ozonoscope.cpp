@@ -73,7 +73,7 @@ void Ozonoscope::start(){
             multiPrintln(F("Ozonoscope MQ-131-Low OK!"));
             break;
         }
-        multiPrintln(F("Waiting for ozonoscope ADC ADS1115..."));
+        // multiPrintln(F("Waiting for ozonoscope ADC ADS1115..."));
         delay(CALIBRATION_DELAY);
     }
 }

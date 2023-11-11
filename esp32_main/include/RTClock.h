@@ -30,8 +30,6 @@ SOFTWARE.
 // https://github.com/adafruit/RTClib
 #include <RTClib.h>// I²C address 0x57 (EEPROM) and 0x68 (RTC)
 
-#include "Gps.h"
-
 #ifndef RTCLOCK
   #define RTCLOCK
 #endif

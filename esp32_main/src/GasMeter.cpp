@@ -88,7 +88,7 @@ void GasMeter::start(){
             multiPrintln(F("Gas meter MiCS-6814 OK!"));
             break;
         }
-        multiPrintln(F("Waiting for gas meter ADC ADS1115..."));
+        // multiPrintln(F("Waiting for gas meter ADC ADS1115..."));
         delay(CALIBRATION_DELAY);
     }
 }

@@ -75,7 +75,7 @@ void Altimeter::start(){
             multiPrintln(F("Altimeter/barometer MS5611-01BA03 OK!"));
             break;
         }
-        multiPrintln(F("Waiting for altimeter/barometer MS5611-01BA03..."));
+        // multiPrintln(F("Waiting for altimeter/barometer MS5611-01BA03..."));
         delay(CALIBRATION_DELAY);
     }
 }

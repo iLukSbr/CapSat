@@ -82,7 +82,7 @@ void Multimeter::start(){
             multiPrintln(F("Multimeter INA219 OK!"));
             break;
         }
-        multiPrintln(F("Waiting for multimeter INA219..."));
+        // multiPrintln(F("Waiting for multimeter INA219..."));
         delay(CALIBRATION_DELAY);
     }
 }

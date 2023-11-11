@@ -5,7 +5,7 @@
 /* === UART Interface === */
 // #include "ESP32Camera.h"// ESP32-CAM
 #include "ParticulateMeter.h"// PMSA003 particulate meter
-#include "Gps.h"// NEO-M8N GPS
+// #include "Gps.h"// NEO-M8N GPS
 
 /* === I²C Interface === */
 #include "Accelerometer.h"// MPU-9250 accelerometer/gyroscope

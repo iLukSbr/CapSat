@@ -108,6 +108,6 @@ void ParticulateMeter::start(){
             break;
         }
         delay(CALIBRATION_DELAY);
-        multiPrintln(F("Waiting for particulate meter PMSA003..."));
+        // multiPrintln(F("Waiting for particulate meter PMSA003..."));
     }
 }

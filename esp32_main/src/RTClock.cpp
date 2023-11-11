@@ -102,7 +102,7 @@ void RTClock::start(){
             Serial.println(F("RTClock DS3231 OK!"));
             break;
         }
-        Serial.println(F("Waiting for RTC DS3231..."));
+        // Serial.println(F("Waiting for RTC DS3231..."));
         delay(CALIBRATION_DELAY);
     }
 }

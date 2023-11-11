@@ -90,13 +90,13 @@ void Humidimeter::start(){
                     multiPrintln(F("Humidimeter/thermometer/TVOC/CO2/AQI sensor ENS160+AHT21 OK!"));
                     break;
                 }
-                multiPrintln(F("Waiting for TVOC/CO2/AQI sensor ENS160..."));
+                // multiPrintln(F("Waiting for TVOC/CO2/AQI sensor ENS160..."));
                 delay(CALIBRATION_DELAY);
             }
             if(isStarted())
                 break;
         }
-        multiPrintln(F("Waiting for humidimeter/thermometer AHT21..."));
+        // multiPrintln(F("Waiting for humidimeter/thermometer AHT21..."));
         delay(CALIBRATION_DELAY);
     }
 }

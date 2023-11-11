@@ -91,7 +91,7 @@ void Accelerometer::start(){
             if(isStarted())
                 break;
         }
-        multiPrintln(F("Waiting for accelerometer/gyroscope MPU-6050..."));
+        // multiPrintln(F("Waiting for accelerometer/gyroscope MPU-6050..."));
         delay(CALIBRATION_DELAY);
     }
 }
