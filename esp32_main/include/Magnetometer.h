@@ -60,6 +60,7 @@ class Magnetometer : public Component{
   public:
     Magnetometer();// Create object
     ~Magnetometer();// Release memory
+    void calibrate();// Calibrate offsets
     void gatherData() override;// Get data from component
     void printData() override;// Display data for test
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries

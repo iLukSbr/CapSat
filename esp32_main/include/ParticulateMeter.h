@@ -44,6 +44,7 @@ SOFTWARE.
   #define PARTICULATE_METER 1
 #endif
 
+#define PMSA003_BAUD_RATE 9600// Hz
 #define PM_SIZE 12// Sensor data quantity
 #define PML1L_KEY "PM1"// JSON PM1 (<1 micrometer diameter) at local pressure key
 #define PML2_5L_KEY "PM2.5"// JSON PM2.5 (<2,5 micrometer diameter) at local pressure key

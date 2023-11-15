@@ -46,6 +46,7 @@ SOFTWARE.
 #endif
 
 #define SD_CS_PIN 5// Chip select pin for MicroSD card
+#define SD_FREQ 9600// MicroSD SPI card frequency
 #define DATAFILE_NAME_LENGTH 25// Datafile name characters length
 
 class MicroSDReaderWriter : public Message{

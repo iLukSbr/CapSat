@@ -18,6 +18,8 @@
 /* === Analog Interface === */
 #include "GasMeter.h"// MiCS-6814 gas meter
 #include "Ozonoscope.h"// MQ-131 ozonoscope
+
+// Removed
 // #include "Thermometer.h"// NTC thermometer
 // #include "Rainmeter.h"// Rain sensor
 // #include "UVRadiometer.h"// Taidacent UV level sensor

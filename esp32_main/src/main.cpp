@@ -83,6 +83,7 @@ SOFTWARE.
 #ifndef _RELAY
   #define SWITCH_PIN 32// On/off switch pin
 #endif
+#define I2C_SPEED 9600// Hz
 
 /* === Strings === */
 #define WIFI_SSID "OBSAT_WIFI"// WiFi SSID
@@ -155,9 +156,14 @@ AsyncWebServer server(80);
 // Messages
 Message msg;
 
+TaskHandle_t task_handle = NULL;
+
 /* === Component list === */
 Component* storage_array[COMPONENTS_VECTOR_SIZE] = {nullptr};
 Vector<Component*> component_list(storage_array);
+
+TaskHandle_t task_array[COMPONENTS_VECTOR_SIZE] = {nullptr};
+Vector<TaskHandle_t> task_list(task_array);
 
 void pushAll(){
   // Initial configuration
@@ -257,6 +263,7 @@ void beginAll(){
     beginWiFi();
   #endif
   Wire.begin();
+  Wire.setClock(I2C_SPEED);
   delay(5000);
   pushAll();
 }
@@ -375,6 +382,21 @@ void deleteAll(){
   component_list.clear();
 }
 
+void setReadTasks(){
+  // byte i = 0;
+  // for(auto element : component_list){
+  //   xTaskCreate(
+  //     toggleLED,// Function to call
+  //     'a' + i,// Task name
+  //     1000,// Task size (bytes)
+  //     NULL,// Function parameter
+  //     1,// Task priority
+  //     task_list[i]// Task handle
+  //   );
+  //   i++;
+  // }
+}
+
 /* === Start configuration === */
 void setup(){
   Serial.begin(SERIAL_BAUD_RATE);
@@ -384,6 +406,7 @@ void setup(){
   #endif
   Serial.println(F("ESP32 DevKitC started!"));
   beginAll();
+  setReadTasks();
 }
 
 /* === Data gathering loop === */

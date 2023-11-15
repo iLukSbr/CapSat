@@ -33,7 +33,7 @@ ParticulateMeter::ParticulateMeter():
     #endif
     aqi(new Adafruit_PM25AQI())
 {// Create object
-    pmSerial->begin(SERIAL_BAUD_RATE);
+    pmSerial->begin(PMSA003_BAUD_RATE);
     start();
 }
 
