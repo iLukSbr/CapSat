@@ -39,12 +39,12 @@ SOFTWARE.
 
 #define ACCELEROMETER_SIZE 6// Sensor data quantity
 #define ACCELEROMETER_SAMPLE_RATE_DIVIDER 19// MPU-9250 sample rate divider
+#define ACCELEROMETER_KEY "acelerometro"
+#define GYROSCOPE_KEY "giroscopio"
 
 class Accelerometer : public Component{
   private:
     bfs::Mpu6500* imu;
-    const String ACCELEROMETER_KEY;// JSON accelerometer key
-    const String GYROSCOPE_KEY;// JSON gyroscope key
     float accelerometer_data[ACCELEROMETER_SIZE] = {0.f};
 
   public:

@@ -44,10 +44,10 @@ SOFTWARE.
 #include <Arduino.h>// Arduino compatibility
 
 // Multitasking
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#include <freertos/semphr.h>
-#include <freertos/queue.h>
+// #include <freertos/FreeRTOS.h>
+// #include <freertos/task.h>
+// #include <freertos/semphr.h>
+// #include <freertos/queue.h>
 
 // Vector creator
 // https://github.com/janelia-arduino/Vector
@@ -156,14 +156,14 @@ AsyncWebServer server(80);
 // Messages
 Message msg;
 
-TaskHandle_t task_handle = NULL;
+// TaskHandle_t task_handle = NULL;
 
 /* === Component list === */
 Component* storage_array[COMPONENTS_VECTOR_SIZE] = {nullptr};
 Vector<Component*> component_list(storage_array);
 
-TaskHandle_t task_array[COMPONENTS_VECTOR_SIZE] = {nullptr};
-Vector<TaskHandle_t> task_list(task_array);
+// TaskHandle_t task_array[COMPONENTS_VECTOR_SIZE] = {nullptr};
+// Vector<TaskHandle_t> task_list(task_array);
 
 void pushAll(){
   // Initial configuration
@@ -231,10 +231,9 @@ void pushAll(){
     WiFi.mode(WIFI_STA);
     WiFi.begin(F(WIFI_SSID), F(WIFI_PASSWORD));
     WiFi.setSleep(false);
-    while(WiFi.status() != WL_CONNECTED){
+    Serial.println(F("Waiting for WiFi connection..."));
+    while(WiFi.status() != WL_CONNECTED)
       delay(CALIBRATION_DELAY);
-      Serial.println(F("Waiting for WiFi connection..."));
-    }
     WiFi.setAutoReconnect(true);
     delay(CALIBRATION_DELAY);
     WebSerial.begin(&server);
@@ -382,7 +381,7 @@ void deleteAll(){
   component_list.clear();
 }
 
-void setReadTasks(){
+// void setReadTasks(){
   // byte i = 0;
   // for(auto element : component_list){
   //   xTaskCreate(
@@ -395,7 +394,7 @@ void setReadTasks(){
   //   );
   //   i++;
   // }
-}
+// }
 
 /* === Start configuration === */
 void setup(){
@@ -406,7 +405,7 @@ void setup(){
   #endif
   Serial.println(F("ESP32 DevKitC started!"));
   beginAll();
-  setReadTasks();
+  // setReadTasks();
 }
 
 /* === Data gathering loop === */

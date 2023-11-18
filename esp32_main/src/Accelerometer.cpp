@@ -26,9 +26,7 @@ SOFTWARE.
 #include "Accelerometer.h"
 
 Accelerometer::Accelerometer():
-    imu(new bfs::Mpu6500()),
-    ACCELEROMETER_KEY(F("acelerometro")),
-    GYROSCOPE_KEY(F("giroscopio"))
+    imu(new bfs::Mpu6500())
 {// Create object
     imu->Config(&Wire, bfs::Mpu6500::I2C_ADDR_SEC);// I²C address 0x69
     start();
@@ -65,9 +63,9 @@ void Accelerometer::printData(){// Display data for test
 void Accelerometer::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries
     uint8_t i, j;
     for(i=0, j=0; i<3 && j<3; i++, j++)
-        doc[ACCELEROMETER_KEY][j] = accelerometer_data[i];
+        doc[F(ACCELEROMETER_KEY)][j] = accelerometer_data[i];
     for(i=3, j=0; i<6 && j<3; i++, j++)
-        doc[GYROSCOPE_KEY][j] = accelerometer_data[i];
+        doc[F(GYROSCOPE_KEY)][j] = accelerometer_data[i];
 }
 
 void Accelerometer::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
