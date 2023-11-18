@@ -39,12 +39,13 @@ SOFTWARE.
   UTFPR = Universidade Tecnológica Federal do Paraná
 */
 
+// #define RESET_EEPROM
+#define DISABLE_LED
+
 /* Camera Model */
 // #define OV5640
 // #define OV5640_AF
 #define OV2640
-
-// #define RESET_EEPROM
 
 // Arduino code
 #include <Arduino.h>
@@ -92,20 +93,35 @@ SOFTWARE.
 // Prints
 #include "message.h"
 
+#ifdef DISABLE_LED
+  #include "esp32-hal-ledc.h"
+#endif
+
 /* === Definitions === */
 #define SERIAL_BAUD_RATE 115200// Serial baud rate
 #define WIFI_SSID "OBSAT_WIFI"// Wi-Fi SSID
 #define WIFI_PASSWORD "OBSatZenith1000"// Wi-Fi password
 #define CALIBRATION_DELAY 1000// Delay to retry calibration (ms)
-#define DEFAULT_PICTURE_DELAY 60000// Delay to take a picture (ms)
+#define DEFAULT_PICTURE_DELAY 240000// Delay to take a picture (ms)
 #define TRIES_STEPS 30// How many tries
-#define FLASH_PIN 4// Camera flash GPIO pin
 
 /* === Camera definitions === */
 #define HZ_CLK_FREQ 16500000
 #define EEPROM_SIZE 255// Define the number of bytes you want to access
 #define CAMERA_MODEL_AI_THINKER
+
 #include "camera_pins.h"// Camera models
+
+#ifdef DISABLE_LED
+  #define CONFIG_LED_ILLUMINATOR_ENABLED 1// Enable LED FLASH setting
+
+  // LED FLASH setup
+  #if CONFIG_LED_ILLUMINATOR_ENABLED
+      #define LED_LEDC_CHANNEL 2 //Using different ledc channel/timer than camera
+      #define CONFIG_LED_MAX_INTENSITY 0// 0-255
+  #endif
+#endif
+
 
 /* === Pointers === */
 #ifdef OV5640_AF
@@ -123,7 +139,25 @@ uint64_t picture_number = 0;
 bool new_photo = false;
 String path_web = "/1.jpg";// Filename
 
-void setupLedFlash(int pin);
+#ifdef DISABLE_LED
+  int led_duty = 1;
+
+  #if CONFIG_LED_ILLUMINATOR_ENABLED
+      void enableLed(bool en){// Turn LED On or Off
+          int duty = en ? led_duty : 0;
+          if (en && (led_duty > CONFIG_LED_MAX_INTENSITY))
+              duty = CONFIG_LED_MAX_INTENSITY;
+          ledcWrite(LED_LEDC_CHANNEL, duty);
+      }
+  #endif
+
+  void setupLedFlash(int pin){
+      #if CONFIG_LED_ILLUMINATOR_ENABLED
+          ledcSetup(LED_LEDC_CHANNEL, 5000, 8);
+          ledcAttachPin(pin, LED_LEDC_CHANNEL);
+      #endif
+  }
+#endif
 
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html>
@@ -250,9 +284,16 @@ void setup(){
   #elif defined(OV2640)
     //
   #endif
-  while(!SD_MMC.begin() || SD_MMC.cardType() == CARD_NONE){
-    msg.multiPrintln(F("Initializing MicroSD card..."));
-  }
+  #ifndef DISABLE_LED
+    while(!SD_MMC.begin() || SD_MMC.cardType() == CARD_NONE){
+      msg.multiPrintln(F("Initializing MicroSD card..."));
+      delay(CALIBRATION_DELAY);
+    }
+  #endif
+  delay(1000);
+  #if defined(DISABLE_LED) && defined(LED_GPIO_NUM)
+    setupLedFlash(LED_GPIO_NUM);
+  #endif
   EEPROM.begin((size_t)EEPROM_SIZE);// initialize EEPROM with predefined size
   #ifdef RESET_EEPROM
     msg.multiPrintln(F("Resetting the EEPROM..."));
@@ -276,17 +317,39 @@ void setup(){
     request->send_P(200, "text/html", index_html);
   });
   server.on("/saved-photo", HTTP_GET, [](AsyncWebServerRequest * request){
-    request->send(SD_MMC, path_web, "image/jpg", false);
+    #ifdef DISABLE_LED
+      #ifdef LED_GPIO_NUM
+        ledcDetachPin(LED_GPIO_NUM);
+      #endif
+      while(!SD_MMC.begin() || SD_MMC.cardType() == CARD_NONE){
+        msg.multiPrintln(F("Initializing MicroSD card..."));
+        delay(CALIBRATION_DELAY);
+      }
+      fs::FS &fs = SD_MMC;
+      File photo_file = fs.open(path_web.c_str(), FILE_READ);
+      if(photo_file){
+          request->send(photo_file, "image/jpeg");
+          photo_file.close();
+      }
+      else
+          request->send(404);
+      SD_MMC.end();
+      // Setup LED FLash if LED pin is defined in camera_pins.h
+      #if defined(LED_GPIO_NUM)
+        setupLedFlash(LED_GPIO_NUM);
+      #endif
+    #else
+      request->send(SD_MMC, path_web, "image/jpg", false);
+    #endif
   });
   server.begin();
-  // Setup LED FLash if LED pin is defined in camera_pins.h
-  #if defined(LED_GPIO_NUM)
-    setupLedFlash(LED_GPIO_NUM);
+  #if defined(DISABLE_LED) && defined(LED_GPIO_NUM)
+      setupLedFlash(LED_GPIO_NUM);
   #endif
 }
 
 void loop(){
-  // if(millis() - stopwatch >= DEFAULT_PICTURE_DELAY || !stopwatch){
+  if(millis() - stopwatch >= DEFAULT_PICTURE_DELAY || !stopwatch){
     byte i = 0;
     unsigned short picture_number = 0;
     msg.multiPrint(F("Web picture path: "));
@@ -318,10 +381,10 @@ void loop(){
     msg.multiPrintln(F("Reading EEPROM..."));
     do{
         byte val = EEPROM.read((int)i);
-        if(val > 254)
+        if(val > 253)
           i++;
         else{
-          picture_number = (unsigned short)val + 1;
+          picture_number = (unsigned short)(val + 1 + 253*i);
           break;
         }
     }while(i < EEPROM_SIZE);
@@ -329,6 +392,14 @@ void loop(){
     path_web = path;
     msg.multiPrint(F("EEPROM read! File path: "));
     msg.multiPrintln(path);
+    #if defined(DISABLE_LED) && defined(LED_GPIO_NUM)
+      ledcDetachPin(LED_GPIO_NUM);
+      delay(1000);
+      while(!SD_MMC.begin() || SD_MMC.cardType() == CARD_NONE){
+        msg.multiPrintln(F("Initializing MicroSD card..."));
+        delay(CALIBRATION_DELAY);
+      }
+    #endif
     fs::FS &fs = SD_MMC;
     File file = fs.open(path.c_str(), FILE_WRITE);
     i = 0;
@@ -345,18 +416,26 @@ void loop(){
     file.write(fb->buf, fb->len);// Payload (image), payload length
     delay(10*CALIBRATION_DELAY);
     file.close();
+    #ifdef DISABLE_LED
+      SD_MMC.end();
+      delay(1000);
+      #ifdef LED_GPIO_NUM
+        setupLedFlash(LED_GPIO_NUM);
+      #endif
+    #endif
     if(i <= TRIES_STEPS)
       msg.multiPrintln(F("Photo saved!"));
     i = 0;
     while(i<EEPROM_SIZE){
-      if(EEPROM.read((int)i) > 254)
+      if(EEPROM.read((int)i) > 253)
         i++;
       else{
-        EEPROM.write((int)i, (byte)(picture_number%256));
+        EEPROM.write((int)i, (byte)(picture_number%253));
         EEPROM.commit();
         break;
       }
     }
     esp_camera_fb_return(fb);
-  // }
+    delay(100);
+  }
 }

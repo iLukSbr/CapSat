@@ -37,6 +37,8 @@ SOFTWARE.
   #define MULTIMETER 1
 #endif
 
+#define MIN_BATTERY_VOLTAGE 630
+#define MAX_BATTERY_VOLTAGE 840
 #define MULTIMETER_SIZE 3// Sensor data quantity
 #define SHUNT_RESISTANCE 0.01// Shunt resistance 10R = 0.01K
 #define BATTERY_KEY "bateria"// JSON battery key

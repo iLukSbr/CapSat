@@ -78,7 +78,7 @@ SOFTWARE.
 
 /* === Constant values === */
 #define TEAM_ID 99// Team ID number
-#define SAVE_DELAY 60000// Sensors data saving delay (ms)
+#define SAVE_DELAY 180000// Sensors data saving delay (ms)
 #define HTTP_SENDING_DELAY 240000// HTTP sending delay (ms)
 #ifndef _RELAY
   #define SWITCH_PIN 32// On/off switch pin
