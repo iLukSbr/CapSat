@@ -97,7 +97,7 @@ void RTClock::start(){
     Serial.println(F("Starting RTC DS3231..."));
     for(byte i=0; i<START_TRIES; i++){
         if(rtc->begin()){
-            rtc->adjust(DateTime(F(__DATE__), F(__TIME__)));
+            // rtc->adjust(DateTime(F(__DATE__), F(__TIME__)));
             started = true;
             Serial.println(F("RTClock DS3231 OK!"));
             break;

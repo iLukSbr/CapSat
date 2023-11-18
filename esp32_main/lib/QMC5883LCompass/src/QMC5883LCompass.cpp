@@ -210,7 +210,6 @@ void QMC5883LCompass::setCalibration(int x_min, int x_max, int y_min, int y_max,
 		(x_min + x_max)/2,
 		(y_min + y_max)/2,
 		(z_min + z_max)/2
-		
 	);
 
 	float x_avg_delta = (x_max - x_min)/2;

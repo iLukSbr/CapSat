@@ -153,7 +153,7 @@ void Gps::gatherDateTime(const bool search){// Get date and time, keep searching
 
 void Gps::start(){
     multiPrintln(F("Starting GPS NEO-M8N..."));
-    gatherDateTime(false);
+    gatherDateTime(true);
     if(isStarted())
         multiPrintln(F("GPS NEO-M8N OK!"));
 }

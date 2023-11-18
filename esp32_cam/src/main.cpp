@@ -39,6 +39,13 @@ SOFTWARE.
   UTFPR = Universidade Tecnológica Federal do Paraná
 */
 
+/* Camera Model */
+#define OV5640
+// #define OV5640_AF
+// #define OV2640
+
+// #define RESET_EEPROM
+
 // Arduino code
 #include <Arduino.h>
 
@@ -65,7 +72,9 @@ SOFTWARE.
 #include <driver/rtc_io.h>
 
 // OV5640 camera 2592x1944 200°
-#include <ESP32_OV5640_AF.h>
+#ifdef OV5640_AF
+  #include <ESP32_OV5640_AF.h>
+#endif
 
 // Utils
 #include <esp_timer.h>
@@ -94,12 +103,14 @@ SOFTWARE.
 
 /* === Camera definitions === */
 #define HZ_CLK_FREQ 16500000
-#define EEPROM_SIZE 256// Define the number of bytes you want to access
+#define EEPROM_SIZE 255// Define the number of bytes you want to access
 #define CAMERA_MODEL_AI_THINKER
 #include "camera_pins.h"// Camera models
 
 /* === Pointers === */
-OV5640* ov5640 = nullptr;// Camera
+#ifdef OV5640_AF
+  OV5640* ov5640 = nullptr;// Camera
+#endif
 // HardwareSerial* camSerial = nullptr;// UART for main MCU communication
 
 // Serial web server
@@ -194,7 +205,8 @@ void setup(){
   config.ledc_timer = LEDC_TIMER_0;
   config.pin_d0 = Y2_GPIO_NUM;
   config.pin_d1 = Y3_GPIO_NUM;
-  config.pin_d2 = Y4_GPIO_NUM;  config.pin_d3 = Y5_GPIO_NUM;
+  config.pin_d2 = Y4_GPIO_NUM;
+  config.pin_d3 = Y5_GPIO_NUM;
   config.pin_d4 = Y6_GPIO_NUM;
   config.pin_d5 = Y7_GPIO_NUM;
   config.pin_d6 = Y8_GPIO_NUM;
@@ -210,11 +222,13 @@ void setup(){
   config.xclk_freq_hz = HZ_CLK_FREQ;
   config.pixel_format = PIXFORMAT_JPEG;
   if(psramFound()){
+    msg.multiPrintln(F("PSRAM found!"));
     config.frame_size = FRAMESIZE_UXGA;// Framesizes: QVGA|CIF|VGA|SVGA|XGA|SXGA|UXGA
     config.jpeg_quality = 10;
-    config.fb_count = 2;
+    config.fb_count = 1;
   }
   else{
+    msg.multiPrintln(F("PSRAM not found!"));
     config.frame_size = FRAMESIZE_SVGA;
     config.jpeg_quality = 12;
     config.fb_count = 1;
@@ -223,14 +237,29 @@ void setup(){
     msg.multiPrint(F("Initializing camera..."));
     delay(CALIBRATION_DELAY);
   }
-  ov5640 = new OV5640();
-  ov5640->start(esp_camera_sensor_get());
-  ov5640->focusInit();
-  ov5640->autoFocusMode();
+  #ifdef OV5640_AF
+    ov5640 = new OV5640();
+    ov5640->start(esp_camera_sensor_get());
+    ov5640->focusInit();
+    ov5640->autoFocusMode();
+  #elif defined(OV5640)
+    //
+  #elif defined(OV2640)
+    //
+  #endif
   while(!SD_MMC.begin() || SD_MMC.cardType() == CARD_NONE){
     msg.multiPrintln(F("Initializing MicroSD card..."));
   }
-  EEPROM.begin(EEPROM_SIZE);// initialize EEPROM with predefined size
+  EEPROM.begin((size_t)EEPROM_SIZE);// initialize EEPROM with predefined size
+  #ifdef RESET_EEPROM
+    msg.multiPrintln(F("Resetting the EEPROM..."));
+    for(byte i=0; i<EEPROM_SIZE; i++){
+      msg.multiPrint(F("Resetting EEPROM byte "));
+      msg.multiPrintln(i);
+      EEPROM.write((int)i, (byte)0);
+      EEPROM.commit();
+    }
+  #endif
   server.on("/", HTTP_GET, [](AsyncWebServerRequest * request){
     request->send_P(200, "text/html", index_html);
   });
@@ -255,14 +284,16 @@ void loop(){
     unsigned short picture_number = 0;
     msg.multiPrint(F("Web picture path: "));
     msg.multiPrintln(path_web);
-    while(ov5640->getFWStatus() != FW_STATUS_S_FOCUSED){
-        msg.multiPrintln(F("Focusing..."));
-        delay(CALIBRATION_DELAY);
-        if(++i > TRIES_STEPS){
-            msg.multiPrintln(F("Not focused, timeout!"));
-            break;
-        }
-    }
+    #ifdef OV5640_AF
+      while(ov5640->getFWStatus() != FW_STATUS_S_FOCUSED){
+          msg.multiPrintln(F("Focusing..."));
+          delay(CALIBRATION_DELAY);
+          if(++i > TRIES_STEPS){
+              msg.multiPrintln(F("Not focused, timeout!"));
+              break;
+          }
+      }
+    #endif
     camera_fb_t* fb = esp_camera_fb_get();// Take a picture with camera
     i = 0;
     while(!fb){
@@ -273,27 +304,30 @@ void loop(){
           break;
       }
     }
+    if(i <= TRIES_STEPS)
+      msg.multiPrintln(F("Picture taken!"));
     stopwatch = millis();
     i = 0;
+    msg.multiPrintln(F("Reading EEPROM..."));
+    picture_number=EEPROM.read((int)i);
     do{
-        byte val = EEPROM.read(i);
-        if(val == 255)
+        byte val = EEPROM.read((int)i);
+        if(val > 254)
           i++;
         else{
-          picture_number = val + 1;
+          picture_number = (unsigned short)val + 1;
           break;
         }
     }while(i < EEPROM_SIZE);
-    picture_number = EEPROM.read(0) + 1;
     String path = "/" + String(picture_number) + ".jpg";// Filename
     path_web = path;
-    msg.multiPrint(F("File path: "));
+    msg.multiPrint(F("EEPROM read! File path: "));
     msg.multiPrintln(path);
     fs::FS &fs = SD_MMC;
     File file = fs.open(path.c_str(), FILE_WRITE);
     i = 0;
+    msg.multiPrintln(F("Saving photo..."));
     while(!file){
-      msg.multiPrintln(F("Saving photo..."));
       delay(CALIBRATION_DELAY);
       file = fs.open(path.c_str(), FILE_WRITE);
       if(++i > TRIES_STEPS){
@@ -307,10 +341,10 @@ void loop(){
     file.close();
     i = 0;
     while(i<EEPROM_SIZE){
-      if(EEPROM.read(i) == 255)
+      if(EEPROM.read((int)i) == 255)
         i++;
       else{
-        EEPROM.write(i, picture_number%256);
+        EEPROM.write((int)i, (byte)(picture_number%256));
         break;
       }
     }

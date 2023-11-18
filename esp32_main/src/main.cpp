@@ -173,7 +173,7 @@ void pushAll(){
   #ifndef _GPS
     component_list.push_back(dynamic_cast<Component*>(m8n = new Gps()));
     delay(CALIBRATION_DELAY);
-    if(m8n->isSignalAcquired())
+    if(m8n->isStarted() && m8n->isSignalAcquired())
       ds3231->rtcAdjust(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond());
   #endif
   #if !defined(_MICROSD_READER_WRITER) && !defined(_RTCLOCK)
