@@ -40,9 +40,9 @@ SOFTWARE.
 */
 
 /* Camera Model */
-#define OV5640
+// #define OV5640
 // #define OV5640_AF
-// #define OV2640
+#define OV2640
 
 // #define RESET_EEPROM
 
@@ -122,6 +122,8 @@ time_t stopwatch = 0;
 uint64_t picture_number = 0;
 bool new_photo = false;
 String path_web = "/1.jpg";// Filename
+
+void setupLedFlash(int pin);
 
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html>
@@ -221,6 +223,7 @@ void setup(){
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = HZ_CLK_FREQ;
   config.pixel_format = PIXFORMAT_JPEG;
+  delay(5000);
   if(psramFound()){
     msg.multiPrintln(F("PSRAM found!"));
     config.frame_size = FRAMESIZE_UXGA;// Framesizes: QVGA|CIF|VGA|SVGA|XGA|SXGA|UXGA
@@ -276,6 +279,10 @@ void setup(){
     request->send(SD_MMC, path_web, "image/jpg", false);
   });
   server.begin();
+  // Setup LED FLash if LED pin is defined in camera_pins.h
+  #if defined(LED_GPIO_NUM)
+    setupLedFlash(LED_GPIO_NUM);
+  #endif
 }
 
 void loop(){
@@ -309,7 +316,6 @@ void loop(){
     stopwatch = millis();
     i = 0;
     msg.multiPrintln(F("Reading EEPROM..."));
-    picture_number=EEPROM.read((int)i);
     do{
         byte val = EEPROM.read((int)i);
         if(val > 254)
@@ -339,16 +345,18 @@ void loop(){
     file.write(fb->buf, fb->len);// Payload (image), payload length
     delay(10*CALIBRATION_DELAY);
     file.close();
+    if(i <= TRIES_STEPS)
+      msg.multiPrintln(F("Photo saved!"));
     i = 0;
     while(i<EEPROM_SIZE){
-      if(EEPROM.read((int)i) == 255)
+      if(EEPROM.read((int)i) > 254)
         i++;
       else{
         EEPROM.write((int)i, (byte)(picture_number%256));
+        EEPROM.commit();
         break;
       }
     }
-    EEPROM.commit();
     esp_camera_fb_return(fb);
   // }
 }
