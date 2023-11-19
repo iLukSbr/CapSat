@@ -86,8 +86,8 @@ SOFTWARE.
 #define I2C_SPEED 9600// Hz
 
 /* === Strings === */
-#define WIFI_SSID "OBSAT_WIFI"// WiFi SSID
-#define WIFI_PASSWORD "OBSatZenith1000"// WiFi password
+#define WIFI_SSID "termometro"// WiFi SSID
+#define WIFI_PASSWORD "12345678"// WiFi password
 #define HTTP_WEBSITE "https://obsat.org.br/teste_post/envio.php"// HTTP POST website
 #define PAYLOAD_KEY "payload"// JSON payloade key
 #define TEAM_KEY "equipe"// JSON team key
