@@ -28,7 +28,7 @@ SOFTWARE.
 Component::Component():
     started(false),
     stopwatch(0),
-    reading_delay(120000)// Default reading delay 2 minutes
+    reading_delay(0)// Default reading delay 2 minutes
 {// Create object
 
 }

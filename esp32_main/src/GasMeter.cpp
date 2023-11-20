@@ -48,9 +48,9 @@ void GasMeter::gatherData(){// Get data from component
     gas_meter_data[5] = 1000.f*gas->measure(CH4);// Methane concentration in air (ppb)
     gas_meter_data[6] = 1000.f*gas->measure(H2);// Hydrogen gas concentration in air (ppb)
     gas_meter_data[7] = 1000.f*gas->measure(C2H5OH);// Ethanol concentration in air (ppb)
-    for(byte i=0; i<GAS_METER_SIZE; i++)
-        if(!gas_meter_data[i])// If invalid meter
-            gas->calibrate();
+    // for(byte i=0; i<GAS_METER_SIZE; i++)
+        // if(!gas_meter_data[i])// If invalid meter
+        //     gas->calibrate();
 }
 
 void GasMeter::printData(){// Display data for test

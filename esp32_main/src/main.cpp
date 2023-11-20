@@ -78,18 +78,26 @@ SOFTWARE.
 
 /* === Constant values === */
 #define TEAM_ID 99// Team ID number
-#define SAVE_DELAY 180000// Sensors data saving delay (ms)
-#define HTTP_SENDING_DELAY 240000// HTTP sending delay (ms)
+#define SAVE_DELAY 0// Sensors data saving delay (ms)
+#define HTTP_SENDING_DELAY 200000// HTTP sending delay (ms)
 #ifndef _RELAY
   #define SWITCH_PIN 32// On/off switch pin
 #endif
 #define I2C_SPEED 9600// Hz
 
 /* === Strings === */
-#define WIFI_SSID "termometro"// WiFi SSID
-#define WIFI_PASSWORD "12345678"// WiFi password
-#define HTTP_WEBSITE "https://obsat.org.br/teste_post/envio.php"// HTTP POST website
-#define PAYLOAD_KEY "payload"// JSON payloade key
+#define WIFI_SSID "obsatserver"// WiFi SSID
+#define WIFI_PASSWORD "obsatpass"// WiFi password
+#define HTTP_WEBSITE "http://192.168.4.1:80/"// HTTP POST server
+
+// #define WIFI_SSID "termometro"// WiFi SSID
+// #define WIFI_PASSWORD "12345678"// WiFi password
+
+// #define WIFI_SSID "OBSAT_WIFI"// WiFi SSID
+// #define WIFI_PASSWORD "OBSatZenith1000"// WiFi password
+// #define HTTP_WEBSITE "https://obsat.org.br/teste_post/envio.php"// HTTP POST server
+
+#define PAYLOAD_KEY "payload"// JSON payload key
 #define TEAM_KEY "equipe"// JSON team key
 
 /* === Components === */
@@ -432,5 +440,4 @@ void loop(){
       }
     #endif
   }
-  delay(CALIBRATION_DELAY);
 }
