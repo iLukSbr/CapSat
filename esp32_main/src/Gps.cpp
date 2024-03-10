@@ -136,7 +136,7 @@ void Gps::gatherDateTime(const bool search){// Get date and time, keep searching
         gatherData();
         // multiPrintln(F("Searching for GPS signal..."));
         i++;
-        if(i>START_TRIES && !search){
+        if(i>GPS_START_TRIES && !search){
             multiPrintln(F("GPS signal not found, timeout!"));
             return;
         }

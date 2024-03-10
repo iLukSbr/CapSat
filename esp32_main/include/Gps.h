@@ -47,7 +47,7 @@ SOFTWARE.
   #define GPS 1
 #endif
 
-#define ACTUAL_YEAR 2023// Date year validation
+#define ACTUAL_YEAR 2024// Date year validation
 #define UTC_OFFSET -3// UTC time zone
 #define UTC_GPS_TIME_DRIFT 19// GPS time delayed behind UTC (s)
 #define GPS_BAUD_RATE 9600// GPS baud rate
@@ -60,6 +60,7 @@ SOFTWARE.
 #define SPEED_KEY "velocidade"// JSON speed key
 #define COURSE_KEY "curso"// JSON course key
 #define SATELLITES_KEY "satelites"// JSON number of GPS satellites key
+#define GPS_START_TRIES 10// GPS start retries
 
 #if !defined(ESP32) && !defined(ESP8266)// For Arduino
   #define GPS_TX_PIN 8// GPS UART RX pin

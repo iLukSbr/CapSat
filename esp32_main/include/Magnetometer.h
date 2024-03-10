@@ -29,9 +29,9 @@ SOFTWARE.
 // I²C interface
 #include <Wire.h>
 
-// QMC5883L magnetometer
-// https://github.com/mprograms/QMC5883LCompass
-#include <QMC5883LCompass.h>// I²C address 0x0D
+// GY-511 LSM303 magnetometer
+// https://github.com/pololu/lsm303-arduino
+#include <LSM303.h>
 
 #ifndef MAGNETOMETER
   #define MAGNETOMETER 1
@@ -39,27 +39,42 @@ SOFTWARE.
 
 #define MAGNETOMETER_KEY "magnetometro"// JSON magnetometer key
 #define MAGNETOMETER_DIRECTION_SIZE 4// Direction string length
-#define MAGNETOMETER_SIZE 5// Sensor data quantity
-#define MAGNETOMETER_I2C_ADDRESS 0x0D// I²C address
-#define MAGNETOMETER_SMOOTHING_STEPS 10// Smoothing steps
-#define MAGNETOMETER_ADVANCED_SMOOTHING true// Discard extreme values
-#define MAGNETOMETER_OSR 0x00// Over sample ratio 512
-#define MAGNETOMETER_RNG 0x10// Full scale 8G
-#define MAGNETOMETER_ODR 0x0C// Output data rate 200 Hz
-#define MAGNETOMETER_MODE 0x01// Continuous mode control
-#define MAGNETOMETER_AZIMUTH_KEY "azimute"// JSON compass azimuth key
-#define MAGNETOMETER_BEARING_KEY "rumo"// JSON compass bearing key
+#define MAGNETOMETER_HEADING_KEY "angulo"// JSON compass heading key
 #define MAGNETOMETER_DIRECTION_KEY "direcao"// JSON compass direction key
+#define MAGNETOMETER_CALIBRATION_DURATION 10000// (ms) Time needed to calibrate
 
 class Magnetometer : public Component{
   private:
-    QMC5883LCompass* compass;
-    int magnetometer_data[MAGNETOMETER_SIZE] = {0};
-    char magnetometer_direction[MAGNETOMETER_DIRECTION_SIZE] = {0};
+        LSM303* compass;
+
+        char magnetometer_direction[4] = {0};
+
+        float magnetometer_heading;
+
+    protected:
+        const char directions[16][3] = {
+            {' ', ' ', 'N'},
+            {'N', 'N', 'E'},
+            {' ', 'N', 'E'},
+            {'E', 'N', 'E'},
+            {' ', ' ', 'E'},
+            {'E', 'S', 'E'},
+            {' ', 'S', 'E'},
+            {'S', 'S', 'E'},
+            {' ', ' ', 'S'},
+            {'S', 'S', 'W'},
+            {' ', 'S', 'W'},
+            {'W', 'S', 'W'},
+            {' ', ' ', 'W'},
+            {'W', 'N', 'W'},
+            {' ', 'N', 'W'},
+            {'N', 'N', 'W'},
+	    };
 
   public:
     Magnetometer();// Create object
     ~Magnetometer();// Release memory
+
     void gatherData() override;// Get data from component
     void printData() override;// Display data for test
     void makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload) override;// Create JSON entries

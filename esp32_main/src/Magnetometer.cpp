@@ -26,18 +26,10 @@ SOFTWARE.
 #include "Magnetometer.h"
 
 Magnetometer::Magnetometer():
-    compass(new QMC5883LCompass())// Instantiate compass
+    compass(new LSM303()),// Instantiate compass
+    magnetometer_heading(0.f)// Initialize heading
 {// Create object
-    multiPrintln(F("Starting magnetometer QMC5883L..."));
-    compass->setADDR(MAGNETOMETER_I2C_ADDRESS);
-    compass->init();
-    compass->setMode(MAGNETOMETER_MODE, MAGNETOMETER_ODR, MAGNETOMETER_RNG, MAGNETOMETER_OSR);
-    compass->setSmoothing(MAGNETOMETER_SMOOTHING_STEPS, MAGNETOMETER_ADVANCED_SMOOTHING);
-    multiPrintln(F("CALIBRATING. Keep moving magnetometer QMC5883L..."));
-    compass->calibrate();
-    delay(1000);
-    compass->setCalibrationOffsets(compass->getCalibrationOffset(0), compass->getCalibrationOffset(1), compass->getCalibrationOffset(2));
-    compass->setCalibrationScales(compass->getCalibrationScale(0), compass->getCalibrationScale(1), compass->getCalibrationScale(2));
+    multiPrintln(F("Starting magnetometer GY-511..."));
     start();
 }
 
@@ -46,47 +38,55 @@ Magnetometer::~Magnetometer(){// Release memory
 }
 
 void Magnetometer::gatherData(){// Get data from component
-    multiPrintln(F("Gathering magnetometer QMC5883L data..."));
+    multiPrintln(F("Gathering magnetometer GY-511 data..."));
     compass->read();
-    delay(2000);
-	magnetometer_data[0] = compass->getX();// X
-	magnetometer_data[1] = compass->getY();// Y
-	magnetometer_data[2] = compass->getZ();// Z
-	magnetometer_data[3] = compass->getAzimuth();// Azimuth
-	magnetometer_data[4] = compass->getBearing(magnetometer_data[3]);// Bearing
-    compass->getDirection(magnetometer_direction, magnetometer_data[3]);// Direction
+    magnetometer_heading = compass->heading();
+    unsigned long a = (magnetometer_heading>-0.5 ? magnetometer_heading/22.5 : (magnetometer_heading+360)/22.5);
+	unsigned long r = a - (int)a;
+	byte part = (r>=.5 ? ceil(a) : floor(a));
+	magnetometer_direction[0] = directions[part][0];
+	magnetometer_direction[1] = directions[part][1];
+	magnetometer_direction[2] = directions[part][2];
     magnetometer_direction[3] = '\0';
 }
 
 void Magnetometer::printData(){// Display data for test
-    multiPrint(F("Magnetometer QMC5883L: "));
-    for(uint8_t i=0; i<MAGNETOMETER_SIZE; i++){
-        multiPrint(magnetometer_data[i]);
-        multiPrint(F(" "));
-    }
+    multiPrint(F("Magnetometer GY-511: "));
+    multiPrint(magnetometer_heading);
+    multiPrint(F("° "));
     multiPrintln(magnetometer_direction);
 }
 
 void Magnetometer::makeJSON(const bool& isHTTP, JsonDocument& doc, JsonObject& payload){// Create JSON entries
-    if(!isHTTP){
-        for(uint8_t i=0; i<3; i++)
-            payload[F(MAGNETOMETER_KEY)][i] = magnetometer_data[i];
-        payload[F(MAGNETOMETER_AZIMUTH_KEY)] = magnetometer_data[3];
-        payload[F(MAGNETOMETER_BEARING_KEY)] = magnetometer_data[4];
-    }
+    if(!isHTTP)
+        payload[F(MAGNETOMETER_HEADING_KEY)] = magnetometer_heading;
     payload[F(MAGNETOMETER_DIRECTION_KEY)] = magnetometer_direction;
 }
 
 void Magnetometer::saveCSVToFile(SdFile* my_file){// Save data to MicroSD card
-    for(uint8_t i=0; i<MAGNETOMETER_SIZE; i++){
-        my_file->print(magnetometer_data[i]);
-        my_file->print(F(","));
-    }
+    my_file->print(magnetometer_heading);
+    my_file->print(F(","));
     my_file->print(magnetometer_direction);
     my_file->print(F(","));
 }
 
 void Magnetometer::start(){
-    multiPrintln(F("Magnetometer QMC5883L OK!"));
+    LSM303::vector<int16_t> running_min = {-257, -349, -193}, running_max = {241, 172, 257};
+    compass->init();
+    compass->enableDefault();
+	unsigned long startTime = millis();
+    Serial.println(F("Calibrating GY-511 magnetometer..."));
+	while((millis() - startTime) < MAGNETOMETER_CALIBRATION_DURATION){
+        compass->read();
+        running_min.x = min(running_min.x, compass->m.x);
+        running_min.y = min(running_min.y, compass->m.y);
+        running_min.z = min(running_min.z, compass->m.z);
+        running_max.x = max(running_max.x, compass->m.x);
+        running_max.y = max(running_max.y, compass->m.y);
+        running_max.z = max(running_max.z, compass->m.z);
+    }
+    compass->m_min = running_min;
+    compass->m_max = running_max;
     started = true;
+    multiPrintln(F("Magnetometer GY-511 OK!"));
 }
