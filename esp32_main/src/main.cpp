@@ -61,9 +61,6 @@ SOFTWARE.
   // HTTP request
   #include <HTTPClient.h>
 
-  // WiFi connection
-  #include <WiFi.h>
-
   // Serial web server
   // https://github.com/me-no-dev/AsyncTCP
   // https://github.com/ayushsharma82/WebSerial
@@ -180,7 +177,6 @@ void pushAll(){
   #endif
   #ifndef _GPS
     component_list.push_back(dynamic_cast<Component*>(m8n = new Gps()));
-    delay(CALIBRATION_DELAY);
     if(m8n->isStarted() && m8n->isSignalAcquired())
       ds3231->rtcAdjust(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond());
   #endif
@@ -239,17 +235,13 @@ void pushAll(){
     WiFi.mode(WIFI_STA);
     WiFi.begin(F(WIFI_SSID), F(WIFI_PASSWORD));
     WiFi.setSleep(false);
-    Serial.println(F("Waiting for WiFi connection..."));
-    while(WiFi.status() != WL_CONNECTED)
-      delay(CALIBRATION_DELAY);
     WiFi.setAutoReconnect(true);
-    delay(CALIBRATION_DELAY);
-    WebSerial.begin(&server);
-    delay(CALIBRATION_DELAY);
     server.begin();
-    Serial.println(WiFi.localIP());
-    msg.multiPrintln(F("WiFi OK!"));
-    delay(CALIBRATION_DELAY);
+    WebSerial.begin(&server);
+    if(WiFi.status() == WL_CONNECTED)
+      msg.multiPrintln(F("WiFi OK!"));
+    else
+      msg.multiPrintln(F("WiFi connection failed."));
   }
 #endif
 
@@ -266,12 +258,11 @@ void pushAll(){
 #endif
 
 void beginAll(){
+  Wire.begin();
+  Wire.setClock(I2C_SPEED);
   #if defined(ESP32) || defined(ESP8266)// For ESP
     beginWiFi();
   #endif
-  Wire.begin();
-  Wire.setClock(I2C_SPEED);
-  delay(5000);
   pushAll();
 }
 
@@ -437,11 +428,13 @@ void loop(){
     #endif
     printAll();
     #if defined(ESP32) || defined(ESP8266)// For ESP
-      if(millis() - stopwatch_http >= HTTP_SENDING_DELAY || !stopwatch_http){
-        msg.multiPrint(F("Running time of last JSON sent: "));
-        msg.multiPrintln(stopwatch_http);
-        sendJSONToServerAll(makeJSONAll(true));
-        stopwatch_http = millis();
+      if(WiFi.status() == WL_CONNECTED){
+        if(millis() - stopwatch_http >= HTTP_SENDING_DELAY || !stopwatch_http){
+          msg.multiPrint(F("Running time of last JSON sent: "));
+          msg.multiPrintln(stopwatch_http);
+          sendJSONToServerAll(makeJSONAll(true));
+          stopwatch_http = millis();
+        }
       }
     #endif
   }

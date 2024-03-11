@@ -25,6 +25,7 @@ SOFTWARE.
 #pragma once
 
 #if defined(ESP32) || defined(ESP8266)
+    #include <WiFi.h>
     // Serial web server
     // https://github.com/ayushsharma82/WebSerial
     #include <WebSerial.h>
@@ -37,7 +38,8 @@ class Message{// Print to Serial and WebSerial
         template<typename T> void multiPrintln(T msg){
             Serial.println(msg);
             #if defined(ESP32) || defined(ESP8266)
-                WebSerial.println(msg);
+                if(WiFi.status() == WL_CONNECTED)
+                    WebSerial.println(msg);
             #endif
             delay(MSG_DELAY);
         }
@@ -45,7 +47,8 @@ class Message{// Print to Serial and WebSerial
         template<typename T, typename U> void multiPrintln(T msg, U places){
             Serial.println(msg, places);
             #if defined(ESP32) || defined(ESP8266)
-                WebSerial.println(msg, places);
+                if(WiFi.status() == WL_CONNECTED)
+                    WebSerial.println(msg, places);
             #endif
             delay(MSG_DELAY);
         }
@@ -53,7 +56,8 @@ class Message{// Print to Serial and WebSerial
         template<typename T> void multiPrint(T msg){
             Serial.print(msg);
             #if defined(ESP32) || defined(ESP8266)
-                WebSerial.print(msg);
+                if(WiFi.status() == WL_CONNECTED)
+                    WebSerial.print(msg);
             #endif
             delay(MSG_DELAY);
         }
@@ -61,7 +65,8 @@ class Message{// Print to Serial and WebSerial
         template<typename T, typename U> void multiPrint(T msg, U places){
             Serial.print(msg, places);
             #if defined(ESP32) || defined(ESP8266)
-                WebSerial.print(msg, places);
+                if(WiFi.status() == WL_CONNECTED)
+                    WebSerial.print(msg, places);
             #endif
             delay(MSG_DELAY);
         }
@@ -69,7 +74,8 @@ class Message{// Print to Serial and WebSerial
         void multiPrintln(){
             Serial.println();
             #if defined(ESP32) || defined(ESP8266)
-                WebSerial.println();
+                if(WiFi.status() == WL_CONNECTED)
+                    WebSerial.println();
             #endif
             delay(MSG_DELAY);
         }
