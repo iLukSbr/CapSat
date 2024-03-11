@@ -24,178 +24,62 @@ SOFTWARE.
 
 #pragma once
 
-// Serial web server
-// https://github.com/ayushsharma82/WebSerial
-#include <WebSerial.h>
+// #define WIFI_ENABLED
 
-#define MSG_DELAY 100
+#if defined(ESP32) || defined(ESP8266)
+    // Serial web server
+    // https://github.com/ayushsharma82/WebSerial
+    #include <WebSerial.h>
+    
+    // Wi-Fi
+    #include <WiFi.h>
+#endif
 
-class Message{
+#define MSG_DELAY 10
+
+class Message{// Print to Serial and WebSerial
     public:
+        template<typename T> void multiPrintln(T msg){
+            Serial.println(msg);
+            #if (defined(ESP32) || defined(ESP8266)) && defined(WIFI_ENABLED)
+                if(WiFi.isConnected())
+                    WebSerial.println(msg);
+            #endif
+            delay(MSG_DELAY);
+        }
+
+        template<typename T, typename U> void multiPrintln(T msg, U places){
+            Serial.println(msg, places);
+            #if (defined(ESP32) || defined(ESP8266)) && defined(WIFI_ENABLED)
+                if(WiFi.isConnected())
+                    WebSerial.println(msg);
+            #endif
+            delay(MSG_DELAY);
+        }
+
+        template<typename T> void multiPrint(T msg){
+            Serial.print(msg);
+            #if (defined(ESP32) || defined(ESP8266)) && defined(WIFI_ENABLED)
+                if(WiFi.isConnected())
+                    WebSerial.print(msg);
+            #endif
+            delay(MSG_DELAY);
+        }
+
+        template<typename T, typename U> void multiPrint(T msg, U places){
+            Serial.print(msg, places);
+            #if (defined(ESP32) || defined(ESP8266)) && defined(WIFI_ENABLED)
+                if(WiFi.isConnected())
+                    WebSerial.print(msg, places);
+            #endif
+            delay(MSG_DELAY);
+        }
+        
         void multiPrintln(){
             Serial.println();
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.println();
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrintln(const char* msg){
-            Serial.println(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.println(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrintln(long unsigned int msg){
-            Serial.println(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.println(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrintln(const String& msg){
-            Serial.println(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.println(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrintln(const __FlashStringHelper* msg){
-            Serial.println(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.println(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrintln(const float msg){
-            Serial.println(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.println(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrintln(const double msg){
-            Serial.println(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.println(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrintln(double msg, int places){
-            Serial.println(msg, places);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.println(msg, places);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrintln(const int msg){
-            Serial.println(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.println(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrintln(const uint8_t msg){
-            Serial.println(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.println(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrintln(const uint16_t msg){
-            Serial.println(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.println(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrint(const char* msg){
-            Serial.print(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.print(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrint(const __FlashStringHelper* msg){
-            Serial.print(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.print(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrint(const float msg){
-            Serial.print(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.print(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrint(const double msg){
-            Serial.print(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.print(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrint(const int msg){
-            Serial.print(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.print(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrint(const uint8_t msg){
-            Serial.print(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.print(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrint(const uint16_t msg){
-            Serial.print(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.print(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrint(long unsigned int msg){
-            Serial.print(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.print(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrint(const String& msg){
-            Serial.print(msg);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.print(msg);
-            #endif
-            delay(MSG_DELAY);
-        }
-
-        void multiPrint(double msg, int places){
-            Serial.print(msg, places);
-            #if defined(ESP32) || defined(ESP8266)
-                WebSerial.print(msg, places);
+            #if (defined(ESP32) || defined(ESP8266)) && defined(WIFI_ENABLED)
+                if(WiFi.isConnected())
+                    WebSerial.println();
             #endif
             delay(MSG_DELAY);
         }
