@@ -45,7 +45,7 @@ SOFTWARE.
 class Accelerometer : public Component{
   private:
     bfs::Mpu6500* imu;
-    float accelerometer_data[ACCELEROMETER_SIZE] = {0.f};
+    float accelerometer_data[ACCELEROMETER_SIZE] = {0.f, 0.f, 0.f, 0.f, 0.f, 0.f};
 
   public:
     Accelerometer();// Create object

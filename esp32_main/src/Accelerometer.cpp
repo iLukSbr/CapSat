@@ -54,7 +54,7 @@ void Accelerometer::gatherData(){// Get data from component
 void Accelerometer::printData(){// Display data for test
     multiPrint(F("Accelerometer/gyroscope MPU-6050: "));
     for(uint8_t i=0; i<ACCELEROMETER_SIZE; i++){
-        multiPrint(accelerometer_data[i]);
+        multiPrint(accelerometer_data[i], 6);
         multiPrint(F(" "));
     }
     multiPrintln();

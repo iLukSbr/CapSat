@@ -141,7 +141,7 @@ void Gps::gatherDateTime(const bool search){// Get date and time, keep searching
             return;
         }
         delay(CALIBRATION_DELAY);
-    }while((!gps->date.isValid() || !gps->time.isValid()) || gps->date.year()>ACTUAL_YEAR);// Colecting date and time
+    }while((!gps->date.isValid() || !gps->time.isValid()) || gps->date.year()!=ACTUAL_YEAR);// Colecting date and time
     if(!isStarted())
         started = true;
     if(!signal_status)
@@ -153,7 +153,7 @@ void Gps::gatherDateTime(const bool search){// Get date and time, keep searching
 
 void Gps::start(){
     multiPrintln(F("Starting GPS NEO-M8N..."));
-    gatherDateTime(true);
+    gatherDateTime(false);
     if(isStarted())
         multiPrintln(F("GPS NEO-M8N OK!"));
 }

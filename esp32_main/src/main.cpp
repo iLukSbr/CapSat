@@ -280,12 +280,17 @@ void gatherDataAll(){
   #ifndef _OZONOSCOPE
     calibrateMQ131();
   #endif
+  if(m8n->isStarted() && m8n->isSignalAcquired())
+    ds3231->rtcAdjust(m8n->getYear(), m8n->getMonth(), m8n->getDay(), m8n->getHour(), m8n->getMinute(), m8n->getSecond());
   for(auto element : component_list){
-    if(element->isStarted())
-      if(element->isInTime())
+    if(element->isStarted()){
+      if(element->isInTime()){
         element->gatherData();
-    else
+      }
+    }
+    else{
       element->start();
+    }
   }
 }
 

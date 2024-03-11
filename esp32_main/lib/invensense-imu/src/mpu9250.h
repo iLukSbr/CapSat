@@ -102,17 +102,17 @@ class Mpu9250 {
   void Reset();
   bool Read();
   inline bool new_imu_data() const {return new_imu_data_;}
-  inline float accel_x_mps2() const {return accel_[0];}
-  inline float accel_y_mps2() const {return accel_[1];}
-  inline float accel_z_mps2() const {return accel_[2];}
-  inline float gyro_x_radps() const {return gyro_[0];}
-  inline float gyro_y_radps() const {return gyro_[1];}
-  inline float gyro_z_radps() const {return gyro_[2];}
+  float accel_x_mps2() const {return accel_[0];}
+  float accel_y_mps2() const {return accel_[1];}
+  float accel_z_mps2() const {return accel_[2];}
+  float gyro_x_radps() const {return gyro_[0];}
+  float gyro_y_radps() const {return gyro_[1];}
+  float gyro_z_radps() const {return gyro_[2];}
   inline bool new_mag_data() const {return new_mag_data_;}
-  inline float mag_x_ut() const {return mag_[0];}
-  inline float mag_y_ut() const {return mag_[1];}
-  inline float mag_z_ut() const {return mag_[2];}
-  inline float die_temp_c() const {return temp_;}
+  float mag_x_ut() const {return mag_[0];}
+  float mag_y_ut() const {return mag_[1];}
+  float mag_z_ut() const {return mag_[2];}
+  float die_temp_c() const {return temp_;}
 
  private:
   InvensenseImu imu_;
