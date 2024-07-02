@@ -10,4 +10,4 @@ Lucas Yukio Fukuda Matsumoto (UTFPR - Universidade Tecnológica Federal do Paran
 Thiago Augusto Pino Gomes (PUCPR - Pontifícia Universidade Católica do Paraná)
 
 TODO: Convert all functions to FreeRTOS multitask.
-
+Debug low temperature shutdwon.
