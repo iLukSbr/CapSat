@@ -9,6 +9,6 @@ Eduardo Ferronato Pelle Guin (PUCPR - Pontifícia Universidade Católica do Para
 Lucas Yukio Fukuda Matsumoto (UTFPR - Universidade Tecnológica Federal do Paraná)  
 Thiago Augusto Pino Gomes (PUCPR - Pontifícia Universidade Católica do Paraná)
 
-## TODO
+## To Do
 * Convert all functions to FreeRTOS multitask.
 * Debug low temperature shutdwon.
