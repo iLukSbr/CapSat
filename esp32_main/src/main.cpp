@@ -31,9 +31,8 @@ SOFTWARE.
 /*
   Tutor: Prof. Dr. Angela Cristina Cararo (PUCPR)
   Students:
-  Eduardo Ferronato Pelle Guin (PUCPR)
   Lucas Yukio Fukuda Matsumoto (UTFPR)
-  Thiago Augusto Pino Gomes (PUCPR)
+  Brunno Pleffken Hosti (PUCPR)
 
   PUCPR = Pontifícia Universidade Católica do Paraná
   UTFPR = Universidade Tecnológica Federal do Paraná
