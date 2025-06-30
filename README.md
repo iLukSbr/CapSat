@@ -5,9 +5,8 @@ CapSat CubeSat STEAM project for 2nd OBSAT (Olimpíada Brasileira de Satélites 
 Tutor: Prof. Dr. Angela Cristina Cararo (PUCPR - Pontifícia Universidade Católica do Paraná)
   
 Students:  
-Eduardo Ferronato Pelle Guin (PUCPR - Pontifícia Universidade Católica do Paraná)  
+Brunno Pleffken Hosti (PUCPR - Pontifícia Universidade Católica do Paraná)  
 Lucas Yukio Fukuda Matsumoto (UTFPR - Universidade Tecnológica Federal do Paraná)  
-Thiago Augusto Pino Gomes (PUCPR - Pontifícia Universidade Católica do Paraná)
 
 ## To Do
 * Convert all functions to FreeRTOS multitask.
