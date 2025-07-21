@@ -24,7 +24,7 @@ SOFTWARE.
 
 #include <cmath>// Math functions
 
-#include "pch.h"
+#include "settings.h"
 #include "Ozonoscope.h"
 
 Ozonoscope::Ozonoscope():

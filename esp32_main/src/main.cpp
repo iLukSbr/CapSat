@@ -38,15 +38,15 @@ SOFTWARE.
   UTFPR = Universidade Tecnológica Federal do Paraná
 */
 
-#include "pch.h"
+#include "settings.h"
 
 #include <Arduino.h>// Arduino compatibility
 
 // Multitasking
-// #include <freertos/FreeRTOS.h>
-// #include <freertos/task.h>
-// #include <freertos/semphr.h>
-// #include <freertos/queue.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <freertos/semphr.h>
+#include <freertos/queue.h>
 
 // Vector creator
 // https://github.com/janelia-arduino/Vector
@@ -76,9 +76,6 @@ SOFTWARE.
 #define TEAM_ID 99// Team ID number
 #define SAVE_DELAY 0// Sensors data saving delay (ms)
 #define HTTP_SENDING_DELAY 200000// HTTP sending delay (ms)
-#ifndef _RELAY
-  #define SWITCH_PIN 32// On/off switch pin
-#endif
 #define I2C_SPEED 9600// Hz
 
 /* === Strings === */
@@ -364,20 +361,6 @@ String makeJSONAll(const bool& isHTTP){
   unsigned long stopwatch_http = 0;// Stopwatch for timed data sending
 #endif
 
-#ifndef _RELAY
-  void powerOn3V3(){
-    pinMode(SWITCH_PIN, OUTPUT);
-    digitalWrite(SWITCH_PIN, HIGH);
-    msg.multiPrintln(F("3V3 line ON!"));
-  }
-
-  void powerOff3V3(){
-    pinMode(SWITCH_PIN, OUTPUT);
-    digitalWrite(SWITCH_PIN, LOW);
-    msg.multiPrintln(F("3V3 line OFF!"));
-  }
-#endif
-
 void deleteAll(){
   for(auto element : component_list)
     delete element;
@@ -403,9 +386,6 @@ void deleteAll(){
 void setup(){
   Serial.begin(SERIAL_BAUD_RATE);
   while(!Serial);
-  #ifndef _RELAY
-    powerOn3V3();
-  #endif
   Serial.println(F("ESP32 DevKitC started!"));
   beginAll();
   // setReadTasks();
